@@ -38,8 +38,8 @@ const PROTOCOL_LABELS: Record<ProxyProtocol, string> = {
 
 const MODE_OPTIONS: Array<{ value: ProxyMode; label: string }> = [
 	{ value: "off", label: "关闭" },
-	{ value: "auto", label: "自动检测" },
-	{ value: "manual", label: "手动配置" },
+	{ value: "auto", label: "自动" },
+	{ value: "manual", label: "手动" },
 ];
 
 export function ProxySettings() {
@@ -76,7 +76,7 @@ export function ProxySettings() {
 				config: next,
 			});
 			setConfig(saved);
-			setNotice("代理设置已保存并生效。");
+			setNotice(saved.mode === "off" ? null : "代理设置已保存并生效。");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
 		} finally {
@@ -102,26 +102,19 @@ export function ProxySettings() {
 		}
 	}
 
-	function summary() {
-		if (config.mode === "off") return "未启用，所有请求直连";
-		return `${PROTOCOL_LABELS[config.protocol]} · ${config.host}:${config.port || "—"}`;
-	}
-
 	return (
 		<div className="border-b py-4">
-			<div className="flex flex-col gap-1">
+			<div className="flex items-center justify-between gap-4 max-[720px]:flex-wrap">
 				<p className="text-base font-semibold text-foreground">本地代理</p>
-				<p className="text-sm text-muted-foreground">
-					让 Surge、Clash 等本地代理软件接管牛马的所有网络请求。当前：{summary()}
-				</p>
-			</div>
 
-			<div className="mt-3 flex gap-1 rounded-lg border p-1">
+			<div className="flex shrink-0 gap-1 rounded-lg border p-1" role="group" aria-label="本地代理模式">
 				{MODE_OPTIONS.map((option) => (
 					<button
 						key={option.value}
 						type="button"
-						className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+						disabled={!loaded || saving || detecting}
+						aria-pressed={config.mode === option.value}
+						className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition ${
 							config.mode === option.value
 								? "bg-foreground text-background"
 								: "text-muted-foreground hover:text-foreground"
@@ -129,30 +122,18 @@ export function ProxySettings() {
 						onClick={() => {
 							setError(null);
 							setNotice(null);
-							setConfig((current) => ({ ...current, mode: option.value }));
+							if (option.value === "off") {
+								void persist({ ...config, mode: "off" });
+							} else {
+								setConfig((current) => ({ ...current, mode: option.value }));
+							}
 						}}
 					>
 						{option.label}
 					</button>
 				))}
 			</div>
-
-			{config.mode === "off" && (
-				<div className="mt-3 flex items-center justify-between gap-4">
-					<p className="text-sm text-muted-foreground">
-						关闭后所有请求将绕过代理，直接连接目标服务。
-					</p>
-					<Button
-						variant="outline"
-						size="sm"
-						type="button"
-						disabled={saving || !loaded}
-						onClick={() => void persist({ ...config, mode: "off" })}
-					>
-						保存
-					</Button>
-				</div>
-			)}
+			</div>
 
 			{config.mode === "auto" && (
 				<div className="mt-3 flex flex-col gap-3">
