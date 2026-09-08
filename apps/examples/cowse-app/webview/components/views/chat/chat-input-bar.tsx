@@ -1737,18 +1737,7 @@ const ModelSelector = memo(function ModelSelector({
 					...(payload.providerModelDetails ?? {}),
 				}));
 				setReasoningCapabilitySource("catalog");
-				setEnabledProviderIds((current) => {
-					const nextProviderIds = new Set(payload.enabledProviderIds);
-					if (normalizedProvider) {
-						nextProviderIds.add(normalizedProvider);
-					}
-					for (const providerId of current) {
-						if (providerId in payload.providerModels) {
-							nextProviderIds.add(providerId);
-						}
-					}
-					return Array.from(nextProviderIds);
-				});
+				setEnabledProviderIds(payload.enabledProviderIds);
 			} catch {
 				if (!cancelled && revision === modelsRevisionRef.current)
 					setReasoningCapabilitySource("fallback");

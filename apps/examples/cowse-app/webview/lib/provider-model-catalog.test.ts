@@ -14,6 +14,18 @@ import type { Provider } from "./provider-schema";
 import { desktopClient } from "./desktop-client";
 
 describe("provider source refresh", () => {
+	it("lists only enabled and configured chat providers", () => {
+		const base: Provider = { id: "empty", name: "Empty", models: 1, color: "#000", letter: "E", enabled: true, modelList: [{ id: "chat", name: "Chat" }] };
+		const catalog = buildProviderModelCatalog([
+			base,
+			{ ...base, id: "key", apiKey: "test-key" },
+			{ ...base, id: "oauth", oauthAccessTokenPresent: true },
+			{ ...base, id: "local", configured: true },
+			{ ...base, id: "disabled", apiKey: "test-key", enabled: false },
+		]);
+		expect(catalog.enabledProviderIds).toEqual(["key", "oauth", "local"]);
+		expect(catalog.providers).toHaveLength(5);
+	});
 	it("forwards fresh to Core and uses only the returned model list", async () => {
 		const invoke = vi
 			.spyOn(desktopClient, "invoke")

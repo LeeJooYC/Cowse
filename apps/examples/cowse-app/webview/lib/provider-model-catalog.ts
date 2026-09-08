@@ -2,6 +2,7 @@
 
 import { isChatCompatibleModel } from "@cline/shared/browser";
 import { desktopClient } from "@/lib/desktop-client";
+import { isProviderConnected } from "@/lib/provider-connection";
 import type {
 	Provider,
 	ProviderCatalogResponse,
@@ -106,7 +107,7 @@ export function buildProviderModelCatalog(
 		enabledProviderIds: providers
 			.filter(
 				(provider) =>
-					provider.enabled && toModelIds(provider.modelList).length > 0,
+					provider.enabled && isProviderConnected(provider) && toModelIds(provider.modelList).length > 0,
 			)
 			.map((provider) => provider.id),
 		providerModels: Object.fromEntries(
