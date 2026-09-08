@@ -1,15 +1,17 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import {
-	AutoApproveSchema,
-	resolveAutoApprove,
-} from "../webview/lib/auto-approve";
+import { resolveAutoApprove } from "../webview/lib/auto-approve";
 import {
 	applyPreferredLanguage,
 	normalizePreferredLanguage,
 } from "../webview/lib/preferred-language";
 import { modelSettingsProviderConfig } from "./local-model-settings";
+import {
+	resolveToolPolicies,
+	resolveRuntimeToolPolicies,
+} from "./auto-approval";
+export { resolveToolPolicies } from "./auto-approval";
 import { setCompactionStatus } from "./compaction-status";
 import {
 	buildConnectionUpdate,
@@ -18,7 +20,6 @@ import {
 	type ClineCoreStartConfig,
 	createSessionCompactionState,
 	createUserInstructionConfigService,
-	DefaultToolNames,
 	findCheckpointForRun,
 	getCoreBuiltinToolCatalog,
 	isSkillsToolAvailable,
@@ -642,27 +643,6 @@ export async function resolveSystemPrompt(config: JsonRecord): Promise<string> {
 	);
 }
 
-export function resolveToolPolicies(
-	config: JsonRecord,
-): Record<string, { autoApprove: boolean }> {
-	if (config.autoApprove === undefined) {
-		return { "*": { autoApprove: config.autoApproveTools !== false } };
-	}
-	const value = AutoApproveSchema.parse(config.autoApprove);
-	return {
-		"*": { autoApprove: false },
-		[DefaultToolNames.READ_FILES]: { autoApprove: value.read },
-		[DefaultToolNames.SEARCH_CODEBASE]: { autoApprove: value.read },
-		[DefaultToolNames.EDITOR]: { autoApprove: value.edit },
-		[DefaultToolNames.APPLY_PATCH]: { autoApprove: value.edit },
-		[DefaultToolNames.RUN_COMMANDS]: { autoApprove: value.commands },
-		[DefaultToolNames.FETCH_WEB_CONTENT]: { autoApprove: value.web },
-		"mcp:*": { autoApprove: value.mcp },
-		[DefaultToolNames.ASK]: { autoApprove: true },
-		[DefaultToolNames.SUBMIT_AND_EXIT]: { autoApprove: true },
-	};
-}
-
 function sendPromptsInQueueSnapshot(
 	ctx: SidecarContext,
 	sessionId: string,
@@ -761,7 +741,7 @@ async function handleStart(
 		source: SessionSource.DESKTOP,
 		interactive: true,
 		...(initialMessages ? { initialMessages } : {}),
-		toolPolicies: resolveToolPolicies(request.config),
+		toolPolicies: resolveRuntimeToolPolicies(request.config),
 	});
 	const sessionId = startResult.sessionId;
 	const workspaceRoot = startResult.manifest.workspace_root;
@@ -916,7 +896,7 @@ async function startRebuiltSession(
 					}),
 				}
 			: {}),
-		toolPolicies: resolveToolPolicies(config),
+		toolPolicies: resolveRuntimeToolPolicies(config),
 	});
 	if (restarted.sessionId !== sessionId) {
 		throw new Error(
@@ -1426,7 +1406,7 @@ async function handleForkUnlocked(
 		source: SessionSource.DESKTOP,
 		interactive: true,
 		sessionMetadata: forkMetadata,
-		toolPolicies: resolveToolPolicies(forkConfig),
+		toolPolicies: resolveRuntimeToolPolicies(forkConfig),
 	};
 	// Sessions without a checkpoint at or before the edited run (imported
 	// transcripts, checkpoints disabled) have no workspace state to roll back,
@@ -1557,7 +1537,7 @@ async function handleRestoreCheckpoint(
 				),
 				source: SessionSource.DESKTOP,
 				interactive: true,
-				toolPolicies: resolveToolPolicies(config),
+				toolPolicies: resolveRuntimeToolPolicies(config),
 			},
 		});
 		const sessionId = restored.sessionId;

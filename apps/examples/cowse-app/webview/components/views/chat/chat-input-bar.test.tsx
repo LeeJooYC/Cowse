@@ -168,6 +168,7 @@ async function renderVoiceComposer({
 	onModeToggle = vi.fn(),
 	onAutoApproveChange = vi.fn(),
 	hasRunningAgents = false,
+	hasPendingToolApprovals = false,
 	onAbort = vi.fn(),
 	onPromptInputChange = vi.fn(),
 	onSend = vi.fn(),
@@ -179,6 +180,7 @@ async function renderVoiceComposer({
 	onModeToggle?: ReturnType<typeof vi.fn>;
 	onAutoApproveChange?: ReturnType<typeof vi.fn>;
 	hasRunningAgents?: boolean;
+	hasPendingToolApprovals?: boolean;
 	onAbort?: ReturnType<typeof vi.fn>;
 	onPromptInputChange?: ReturnType<typeof vi.fn>;
 	onSend?: ReturnType<typeof vi.fn>;
@@ -193,6 +195,7 @@ async function renderVoiceComposer({
 					attachments={[]}
 					gitBranch="main"
 					hasRunningAgents={hasRunningAgents}
+					hasPendingToolApprovals={hasPendingToolApprovals}
 					mode={mode}
 					model="test-model"
 					onAbort={onAbort}
@@ -354,6 +357,18 @@ describe("ChatInputBar", () => {
 				...document.querySelectorAll<HTMLInputElement>('[role="dialog"] input'),
 			].every((input) => input.disabled),
 		).toBe(true);
+	});
+
+	it("allows changing categories while the running turn is waiting for approval", async () => {
+		await renderVoiceComposer({
+			status: "running",
+			hasPendingToolApprovals: true,
+			onAutoApproveChange: vi.fn(),
+		});
+		expect(
+			container.querySelector<HTMLButtonElement>('[aria-label="自动允许"]')
+				?.disabled,
+		).toBe(false);
 	});
 
 	it("allows a parent session with a running child agent to be stopped", async () => {
@@ -2134,7 +2149,7 @@ describe("ChatInputBar token ring", () => {
 		});
 
 		const panel = document.querySelector("#token-usage-panel");
-		expect(panel?.textContent).toContain("上下文预算500.5k / 1.0M (50%)");
+		expect(panel?.textContent).toContain("上下文预算488.8K / 976.6K (50%)");
 		expect(panel?.textContent).toContain("输入 Token500,000");
 		expect(panel?.textContent).toContain("输出 Token500");
 		expect(panel?.textContent).toContain("缓存 Token125,000");

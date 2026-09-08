@@ -2638,6 +2638,7 @@ export function useChatSession() {
 				sessionId: activeSessionId,
 				requestId,
 				approved,
+				autoApprove: config.autoApprove,
 				reason: approved
 					? undefined
 					: "Tool call rejected from desktop approval prompt",
@@ -2646,7 +2647,7 @@ export function useChatSession() {
 				prev.filter((item) => item.requestId !== requestId),
 			);
 		},
-		[],
+		[config.autoApprove],
 	);
 
 	const approveToolApproval = useCallback(

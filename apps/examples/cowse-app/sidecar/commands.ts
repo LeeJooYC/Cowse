@@ -73,6 +73,7 @@ import {
 } from "@cline/shared";
 import { readFileSyncStrippingUtf8Bom } from "@cline/shared/node";
 import packageJson from "../package.json";
+import { AutoApproveSchema } from "../webview/lib/auto-approve";
 import { prepareFullQuit } from "./full-quit";
 import { withTitleWrite } from "./session-title";
 import { queryCompatibleContextLimit } from "./local-model-settings";
@@ -1523,6 +1524,14 @@ export async function handleCommand(
 		}
 		if (pending.item.sessionId !== sessionId) {
 			throw new Error("tool approval does not belong to this session");
+		}
+		// Validate and save the latest choices before resuming the awaiting tool.
+		// This approval remains one-shot; later tools consult these live settings.
+		if (args?.autoApprove !== undefined) {
+			const autoApprove = AutoApproveSchema.parse(args.autoApprove);
+			const session = ctx.liveSessions.get(sessionId);
+			if (!session) throw new Error("Session is no longer available");
+			session.config = { ...session.config, autoApprove };
 		}
 		pending.resolve({
 			approved: Boolean(args?.approved),

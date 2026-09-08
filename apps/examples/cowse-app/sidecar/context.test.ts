@@ -721,6 +721,104 @@ describe("Code sidecar runtime capabilities", () => {
 		).toBe(false);
 	});
 
+	it.each([
+		["read", "read_files"],
+		["read", "search_codebase"],
+		["edit", "editor"],
+		["edit", "apply_patch"],
+		["commands", "run_commands"],
+		["web", "fetch_web_content"],
+		["mcp", "mcp:server:tool"],
+	])("applies updated %s approval to subsequent %s calls without restarting", async (category, toolName) => {
+		const { createSidecarContext, requestSidecarToolApproval } = await import(
+			"./context"
+		);
+		const { handleCommand } = await import("./commands");
+		const { resolveRuntimeToolPolicies, isToolAutoAllowed } = await import(
+			"./auto-approval"
+		);
+		const ctx = createSidecarContext("/workspace/project");
+		const owner = { data: { canApproveTools: true }, send: vi.fn() };
+		ctx.wsClients.add(owner);
+		const denied = {
+			read: false,
+			edit: false,
+			commands: false,
+			web: false,
+			mcp: false,
+		};
+		const session: LiveSession = { config: { autoApprove: denied }, messages: [],
+			promptsInQueue: [], busy: true, startedAt: Date.now(), status: "running" };
+		ctx.liveSessions.set("live", session);
+		const request = {
+			sessionId: "live",
+			agentId: "a",
+			conversationId: "live",
+			iteration: 1,
+			toolCallId: "call",
+			toolName,
+			input: {},
+			policy: { autoApprove: false },
+		};
+		const waiting = requestSidecarToolApproval(ctx, request);
+		expect(ctx.pendingApprovals.size).toBe(1);
+		const requestId = [...ctx.pendingApprovals.keys()][0];
+		const allowed = { ...denied, [category]: true };
+		await expect(
+			handleCommand(
+				ctx,
+				"respond_tool_approval",
+				{
+					sessionId: "live",
+					requestId,
+					approved: true,
+					autoApprove: allowed,
+				},
+				{ connection: { data: { canApproveTools: true }, send: vi.fn() } },
+			),
+		).rejects.toThrow("does not belong");
+		expect(session.config.autoApprove).toEqual(denied);
+		await handleCommand(
+			ctx,
+			"respond_tool_approval",
+			{
+				sessionId: "live",
+				requestId,
+				approved: true,
+				autoApprove: allowed,
+			},
+			{ connection: owner },
+		);
+		await expect(waiting).resolves.toEqual({ approved: true });
+		await expect(
+			requestSidecarToolApproval(ctx, { ...request, toolCallId: "next" }),
+		).resolves.toEqual({ approved: true });
+		expect(ctx.pendingApprovals.size).toBe(0);
+		expect(isToolAutoAllowed(session.config, "unknown_tool")).toBe(false);
+		// Core always consults the host for categories, including initially enabled ones.
+		expect(resolveRuntimeToolPolicies(session.config)["*"]).toEqual({
+			autoApprove: false,
+		});
+		// Changing the choice back off restores approval for the following call.
+		session.config = { autoApprove: denied };
+		const revoked = requestSidecarToolApproval(ctx, {
+			...request,
+			toolCallId: "revoked",
+		});
+		expect(ctx.pendingApprovals.size).toBe(1);
+		await handleCommand(
+			ctx,
+			"respond_tool_approval",
+			{
+				sessionId: "live",
+				requestId: [...ctx.pendingApprovals.keys()][0],
+				approved: false,
+			},
+			{ connection: owner },
+		);
+		await expect(revoked).resolves.toEqual({ approved: false });
+	});
+
 	it("resolves approval through websocket state", async () => {
 		const { createSidecarContext, initializeSessionManager } = await import(
 			"./context"

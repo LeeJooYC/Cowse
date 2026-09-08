@@ -312,6 +312,7 @@ type ChatInputBarProps = {
 	onModelChange: (model: string) => void;
 	onModeToggle: () => void;
 	autoApprove?: AutoApprove;
+	hasPendingToolApprovals?: boolean;
 	onAutoApproveChange?: (value: AutoApprove) => void;
 	onReasoningChange: (
 		next: Pick<ChatSessionConfig, "thinking" | "reasoningEffort">,
@@ -359,6 +360,7 @@ function ChatInputBarImpl({
 	onModelChange,
 	onModeToggle,
 	autoApprove,
+	hasPendingToolApprovals = false,
 	onAutoApproveChange,
 	onReasoningChange,
 	onListGitBranches,
@@ -1486,7 +1488,7 @@ function ChatInputBarImpl({
 					<ModeToggle mode={mode} disabled={isBusy} onToggle={onModeToggle} />
 					<AutoApproveMenu
 						value={resolveAutoApprove(autoApprove)}
-						disabled={isBusy}
+						disabled={isBusy && !hasPendingToolApprovals}
 						onChange={onAutoApproveChange}
 					/>
 					<Select
@@ -2278,15 +2280,5 @@ function TokenUsageRing({
 }
 
 function formatCompactTokens(value: number): string {
-	if (value >= 1_000_000) {
-		return `${(value / 1_000_000).toFixed(1)}M`;
-	}
-	if (value >= 1_000) {
-		return `${formatCompactUnit(value / 1_000)}k`;
-	}
-	return value.toLocaleString();
-}
-
-function formatCompactUnit(value: number): string {
-	return value.toFixed(1).replace(/\.0$/, "");
+	return formatContextBudget(value);
 }

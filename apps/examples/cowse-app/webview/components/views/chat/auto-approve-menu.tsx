@@ -32,7 +32,7 @@ export function AutoApproveMenu({
 			<PopoverContent align="end" className="w-72 space-y-3">
 				<div className="font-medium">自动允许</div>
 				<p className="text-xs text-muted-foreground">
-					勾选后，无需再次确认即可执行对应操作。未勾选的操作仍需审批。下次发送生效。
+					勾选后，无需再次确认即可执行对应操作。未勾选的操作仍需审批。下次发送或处理当前审批后生效；已弹出的审批仍需手动确认。
 				</p>
 				{AUTO_APPROVE_OPTIONS.map(({ key, label, description }) => (
 					<label

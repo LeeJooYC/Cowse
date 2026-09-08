@@ -1631,6 +1631,7 @@ function ChatThreadPane({
 				config.autoApproveTools,
 			)}
 			onAutoApproveChange={handleAutoApproveChange}
+			hasPendingToolApprovals={pendingToolApprovals.length > 0}
 			onPromptInputChange={handlePromptInputChange}
 			onOpenVoiceInputSettings={onOpenVoiceInputSettings}
 			onReasoningChange={handleReasoningChange}

@@ -8,6 +8,7 @@ import {
 	saveModelRuntimeSettings,
 	contextBudgetSteps,
 	defaultContextBudget,
+	formatContextBudget,
 } from "@/lib/model-runtime-settings";
 
 const invoke = vi.hoisted(() => vi.fn());
@@ -24,7 +25,7 @@ afterEach(async () => {
 	window.localStorage.clear();
 });
 
-it("shows only a budget slider and saves budget changes", async () => {
+it("shows the default toggle and saves manual budget changes", async () => {
 	invoke.mockResolvedValue({ limit: 262144 });
 	const onChange = vi.fn();
 	await act(async () =>
@@ -37,6 +38,7 @@ it("shows only a budget slider and saves budget changes", async () => {
 					model: "local",
 					contextWindow: 32768,
 					modelContextLimit: 262144,
+					useDefaultBudget: false,
 				}}
 				disabled={false}
 				onChange={onChange}
@@ -77,7 +79,7 @@ it("shows only a budget slider and saves budget changes", async () => {
 	);
 });
 
-it("queries the selected model and saves a 128K default bounded by the reply", async () => {
+it("uses the detected model limit by default and hides the slider", async () => {
 	invoke.mockResolvedValue({ limit: 262144 });
 	const onChange = vi.fn();
 	await act(async () =>
@@ -96,15 +98,17 @@ it("queries the selected model and saves a 128K default bounded by the reply", a
 	});
 	expect(onChange).toHaveBeenCalledWith(
 		expect.objectContaining({
-			contextWindow: 131072,
+			contextWindow: 262144,
 			modelContextLimit: 262144,
+			useDefaultBudget: true,
 		}),
 	);
+	expect(container.querySelector("input[type=range]")).toBeNull();
 	expect(
 		container
-			.querySelector("input[type=range]")
-			?.getAttribute("aria-valuetext"),
-	).toBe("128K");
+			.querySelector('[aria-label="使用默认预算"]')
+			?.getAttribute("aria-checked"),
+	).toBe("true");
 });
 
 it("offers 16K to 256K and defaults to 128K without claiming a model limit", async () => {
@@ -135,11 +139,147 @@ it("offers 16K to 256K and defaults to 128K without claiming a model limit", asy
 	);
 });
 
-it("keeps a small or non-power-of-two server limit as the exact last stop", () => {
-	expect(contextBudgetSteps(100000)).toEqual([16384, 32768, 65536, 100000]);
-	expect(contextBudgetSteps(8192)).toEqual([8192]);
+it("only offers fixed stops at or below the model limit", () => {
+	expect(contextBudgetSteps(100000)).toEqual([16384, 32768, 65536]);
+	expect(contextBudgetSteps(8192)).toEqual([]);
 	expect(contextBudgetSteps(undefined)).toEqual([]);
 	expect(defaultContextBudget(65536)).toBe(65536);
+	expect(contextBudgetSteps(1310720)).toEqual([
+		16384, 32768, 65536, 131072, 262144,
+	]);
+	expect(formatContextBudget(36642)).toBe("35.8K");
+	expect(formatContextBudget(1310720)).toBe("1280K");
+});
+
+it("toggles a large default budget into a capped manual slider and restores the choice", async () => {
+	invoke.mockResolvedValue({ limit: 1310720 });
+	const { useState } = await import("react");
+	function Harness() {
+		const [settings, setSettings] = useState({
+			provider: "cline-pass",
+			model: "glm",
+			contextWindow: 1310720,
+			useDefaultBudget: true,
+			manualContextWindow: 65536,
+		});
+		return (
+			<ModelSettingsEditor
+				provider="cline-pass"
+				model="glm"
+				settings={settings}
+				disabled={false}
+				onChange={(next) => setSettings(next as typeof settings)}
+			/>
+		);
+	}
+	await act(async () => root.render(<Harness />));
+	expect(container.querySelector('input[type="range"]')).toBeNull();
+	await act(async () =>
+		container
+			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
+			.click(),
+	);
+	expect(
+		container
+			.querySelector('input[type="range"]')
+			?.getAttribute("aria-valuetext"),
+	).toBe("64K");
+	expect(
+		[...container.querySelectorAll("button[aria-pressed]")].map(
+			(b) => b.textContent,
+		),
+	).toEqual(["16K", "32K", "64K", "128K", "256K"]);
+	await act(async () =>
+		container
+			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
+			.click(),
+	);
+	expect(container.querySelector('input[type="range"]')).toBeNull();
+	await act(async () =>
+		container
+			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
+			.click(),
+	);
+	expect(
+		container
+			.querySelector('input[type="range"]')
+			?.getAttribute("aria-valuetext"),
+	).toBe("64K");
+});
+
+it.each([
+	[65536, ["16K", "32K", "64K"]],
+	[131072, ["16K", "32K", "64K", "128K"]],
+	[196608, ["16K", "32K", "64K", "128K"]],
+	[65535, ["16K", "32K"]],
+	[16384, ["16K"]],
+] as const)("renders manual stops bounded by a %i-token model limit", async (limit, labels) => {
+	invoke.mockResolvedValue({ limit });
+	const onChange = vi.fn();
+	await act(async () =>
+		root.render(
+			<ModelSettingsEditor
+				provider="test"
+				model="small"
+				disabled={false}
+				settings={{
+					provider: "test",
+					model: "small",
+					contextWindow: 262144,
+					useDefaultBudget: false,
+				}}
+				onChange={onChange}
+			/>,
+		),
+	);
+	expect(
+		[...container.querySelectorAll("button[aria-pressed]")].map(
+			(button) => button.textContent,
+		),
+	).toEqual(labels);
+	const slider = container.querySelector<HTMLInputElement>(
+		'input[type="range"]',
+	)!;
+	expect(slider.max).toBe(String(labels.length - 1));
+	expect(slider.getAttribute("aria-valuetext")).toBe(labels.at(-1));
+	expect(slider.disabled).toBe(labels.length === 1);
+	expect(onChange).toHaveBeenCalledWith(
+		expect.objectContaining({
+			contextWindow: contextBudgetSteps(limit).at(-1),
+		}),
+	);
+	expect(container.textContent).not.toMatch(
+		/默认预算使用模型声明|1K = 1024|手动预算最高/,
+	);
+});
+
+it("keeps models below 16K on their default without inventing a manual stop", async () => {
+	invoke.mockResolvedValue({ limit: 8192 });
+	const onChange = vi.fn();
+	await act(async () =>
+		root.render(
+			<ModelSettingsEditor
+				provider="test"
+				model="tiny"
+				disabled={false}
+				onChange={onChange}
+				settings={{
+					provider: "test",
+					model: "tiny",
+					useDefaultBudget: false,
+					contextWindow: 262144,
+				}}
+			/>,
+		),
+	);
+	expect(container.querySelector('input[type="range"]')).toBeNull();
+	expect(
+		container.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')
+			?.disabled,
+	).toBe(true);
+	expect(onChange).toHaveBeenCalledWith(
+		expect.objectContaining({ contextWindow: 8192, useDefaultBudget: true }),
+	);
 });
 
 it("clamps an existing budget when the server reports a smaller maximum", async () => {

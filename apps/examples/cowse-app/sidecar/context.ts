@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isToolAutoAllowed } from "./auto-approval";
 import { appendFile, mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname } from "node:path";
@@ -752,7 +753,7 @@ export function createSidecarRuntimeCapabilities(
 	};
 }
 
-function requestSidecarToolApproval(
+export function requestSidecarToolApproval(
 	ctx: SidecarContext,
 	request: ToolApprovalRequest,
 ): Promise<ToolApprovalResult> {
@@ -764,6 +765,14 @@ function requestSidecarToolApproval(
 			approved: false,
 			reason: "No trusted desktop approval surface is connected",
 		});
+	}
+	if (
+		isToolAutoAllowed(
+			ctx.liveSessions.get(request.sessionId)?.config,
+			request.toolName,
+		)
+	) {
+		return Promise.resolve({ approved: true });
 	}
 	return new Promise<ToolApprovalResult>((resolve) => {
 		const requestId = randomUUID();

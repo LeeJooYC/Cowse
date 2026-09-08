@@ -12,15 +12,16 @@ export const ModelRuntimeSettingsSchema = z.object({
 		.max(Number.MAX_SAFE_INTEGER)
 		.optional(),
 	modelContextLimit: z.number().int().positive().optional(),
+	useDefaultBudget: z.boolean().optional(),
+	manualContextWindow: z.number().int().min(1024).optional(),
 });
 export type ModelRuntimeSettings = z.infer<typeof ModelRuntimeSettingsSchema>;
 
 export function contextBudgetSteps(limit?: number): number[] {
 	if (!limit || !Number.isSafeInteger(limit) || limit < 1024) return [];
-	const cap = limit;
+	const cap = Math.min(limit, 262144);
 	const steps: number[] = [];
 	for (let value = 16384; value <= cap; value *= 2) steps.push(value);
-	if (steps.at(-1) !== cap) steps.push(cap);
 	return steps;
 }
 
@@ -29,9 +30,9 @@ export function defaultContextBudget(limit: number): number {
 }
 
 export function formatContextBudget(value: number): string {
-	return value % 1024 === 0
-		? `${value / 1024}K`
-		: `${value.toLocaleString()} Token`;
+	return value >= 1024
+		? `${(value / 1024).toFixed(1).replace(/\.0$/, "")}K`
+		: value.toLocaleString();
 }
 
 const storageKey = (provider: string, model: string) =>

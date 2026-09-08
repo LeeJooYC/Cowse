@@ -1586,7 +1586,9 @@ describe("first-send connection updates", () => {
 					{ role: "user", content: "first prompt" },
 					{ role: "assistant", content: "first response" },
 				],
-				toolPolicies: resolveToolPolicies({ ...baseConfig, ...next }),
+				toolPolicies: (
+					await import("./auto-approval")
+				).resolveRuntimeToolPolicies({ ...baseConfig, ...next }),
 			}),
 		);
 		expect(start.mock.invocationCallOrder[0]).toBeLessThan(

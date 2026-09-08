@@ -88,6 +88,39 @@ afterEach(async () => {
 });
 
 describe("useChatSession", () => {
+	it("sends the current approval choices when resuming a pending tool", async () => {
+		invokeMock.mockImplementation(
+			async (command: string, args?: Record<string, unknown>) => {
+				if (
+					command === "chat_session_command" &&
+					(args?.request as { action: string })?.action === "start"
+				)
+					return { sessionId: "approval-session" };
+				return [];
+			},
+		);
+		await act(async () => current.start(current.config));
+		const autoApprove = {
+			read: true,
+			edit: false,
+			commands: true,
+			web: false,
+			mcp: false,
+		};
+		await act(async () =>
+			current.setConfig((prev) => ({ ...prev, autoApprove })),
+		);
+		await act(async () => current.approveToolApproval("approval-request"));
+		expect(invokeMock).toHaveBeenCalledWith(
+			"respond_tool_approval",
+			expect.objectContaining({
+				sessionId: "approval-session",
+				requestId: "approval-request",
+				approved: true,
+				autoApprove,
+			}),
+		);
+	});
 	it("keeps the prompt above live output arriving while a running session attaches", async () => {
 		const attaching = deferred<{ status: string }>();
 		invokeMock.mockImplementation(
