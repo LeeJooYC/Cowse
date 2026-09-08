@@ -14,6 +14,7 @@ export const ModelRuntimeSettingsSchema = z.object({
 	modelContextLimit: z.number().int().positive().optional(),
 	useDefaultBudget: z.boolean().optional(),
 	manualContextWindow: z.number().int().min(1024).optional(),
+	maxOutputTokens: z.union([z.literal(4096), z.literal(8192), z.literal(16384), z.literal(32768)]).nullable().optional(),
 });
 export type ModelRuntimeSettings = z.infer<typeof ModelRuntimeSettingsSchema>;
 
@@ -66,7 +67,7 @@ export function saveModelRuntimeSettings(settings: ModelRuntimeSettings): void {
 }
 
 export const REASONING_LABELS: Record<string, string> = {
-	default: "默认",
+	on: "开启",
 	none: "关闭",
 	minimal: "极低",
 	low: "低",
@@ -79,11 +80,12 @@ export const REASONING_LABELS: Record<string, string> = {
 export function reasoningChoices(
 	options: ModelReasoningOption[] | undefined,
 ): string[] {
-	const values = new Set<string>(["default"]);
+	const values = new Set<string>();
 	for (const option of options ?? []) {
 		if (option.type === "toggle") values.add("none");
 		if (option.type === "effort")
 			for (const value of option.values) if (value) values.add(value);
 	}
-	return Object.keys(REASONING_LABELS).filter((value) => values.has(value));
+	const efforts = Object.keys(REASONING_LABELS).filter((value) => values.has(value));
+	return efforts.some((value) => value !== "none") ? efforts : ["on", "none"];
 }

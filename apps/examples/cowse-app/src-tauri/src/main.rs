@@ -27,6 +27,8 @@ const VIEW_ZOOM_IN_MENU_ID: &str = "view-zoom-in";
 const VIEW_ZOOM_OUT_MENU_ID: &str = "view-zoom-out";
 #[cfg(any(target_os = "macos", test))]
 const VIEW_ZOOM_RESET_MENU_ID: &str = "view-zoom-reset";
+#[cfg(any(target_os = "macos", test))]
+const FULL_QUIT_MENU_ID: &str = "cowse-full-quit";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
@@ -906,6 +908,7 @@ fn show_session_notification(
 #[cfg(any(target_os = "macos", test))]
 fn application_menu_action(menu_id: &str) -> Option<DesktopAction> {
     match menu_id {
+        FULL_QUIT_MENU_ID => Some(DesktopAction::FullQuit),
         VIEW_ZOOM_IN_MENU_ID => Some(DesktopAction::ZoomIn),
         VIEW_ZOOM_OUT_MENU_ID => Some(DesktopAction::ZoomOut),
         VIEW_ZOOM_RESET_MENU_ID => Some(DesktopAction::ZoomReset),
@@ -916,6 +919,23 @@ fn application_menu_action(menu_id: &str) -> Option<DesktopAction> {
 #[cfg(target_os = "macos")]
 fn setup_application_menu(app: &tauri::App) -> tauri::Result<()> {
     let menu = Menu::default(app.handle())?;
+    // The native predefined Quit invokes NSApplication.terminate directly.
+    // Replace it with an application-owned action so Cmd+Q cannot bypass
+    // prepare_full_quit and the shared daemon's idle check.
+    if let Some(MenuItemKind::Submenu(application)) = menu.items()?.first() {
+        let items = application.items()?;
+        if let Some(MenuItemKind::Predefined(last)) = items.last() {
+            if last.text()?.starts_with("Quit") {
+                application.remove(last)?;
+                let quit = MenuItem::with_id(
+                    app, FULL_QUIT_MENU_ID, "完全退出牛马", true, Some("CmdOrCtrl+Q"),
+                )?;
+                application.append(&quit)?;
+            } else {
+                return Err(std::io::Error::other("unexpected native Quit menu item").into());
+            }
+        }
+    }
     let zoom_in = MenuItem::with_id(app, VIEW_ZOOM_IN_MENU_ID, "Zoom In", true, None::<&str>)?;
     let zoom_out = MenuItem::with_id(
         app,
@@ -1185,6 +1205,7 @@ mod tests {
             application_menu_action(VIEW_ZOOM_RESET_MENU_ID),
             Some(DesktopAction::ZoomReset)
         );
+        assert_eq!(application_menu_action(FULL_QUIT_MENU_ID), Some(DesktopAction::FullQuit));
         assert_eq!(application_menu_action("unknown"), None);
     }
 

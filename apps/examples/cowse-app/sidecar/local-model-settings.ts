@@ -62,9 +62,10 @@ export function modelSettingsProviderConfig(
 	)
 		throw new Error("上下文预算不能超过模型声明的上限");
 	const budget = settings.contextWindow;
-	if (!budget) return { ...existing };
+	if (!budget) return { ...existing, maxOutputTokens: settings.maxOutputTokens ?? 0 };
 	return {
 		...existing,
+		maxOutputTokens: settings.maxOutputTokens ?? 0,
 		...(budget ? { maxInputTokens: budget } : {}),
 		modelInfo: {
 			...(existing.modelInfo?.id === settings.model ? existing.modelInfo : {}),

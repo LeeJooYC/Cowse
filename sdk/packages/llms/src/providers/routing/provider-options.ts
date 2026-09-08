@@ -95,6 +95,18 @@ export function composeAiSdkProviderOptions(
 		target,
 		suppressions,
 	});
+	// Custom OpenAI-compatible servers without effort controls need an
+	// explicit toggle; portable reasoning otherwise turns `true` into medium.
+	if (
+		["openai", "openai-compatible"].includes(request.providerId) &&
+		target === "openai-compatible" &&
+		!context.model.reasoningOptions?.some((option) =>
+			option.type === "effort" && option.values.some((value) =>
+				value !== "default" && value !== "none")) &&
+		typeof request.reasoning?.enabled === "boolean"
+	) {
+		compatibleOptions.enable_thinking = request.reasoning.enabled;
+	}
 	const anthropicOptions = buildAnthropicProviderOptions(
 		normalizedRequest,
 		context,

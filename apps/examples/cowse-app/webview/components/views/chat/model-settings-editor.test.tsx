@@ -25,6 +25,29 @@ afterEach(async () => {
 	window.localStorage.clear();
 });
 
+it("keeps the output slider visible with default context and saves each limit", async () => {
+	invoke.mockResolvedValue({ limit: 262144 });
+	const onChange = vi.fn();
+	await act(async () => root.render(<ModelSettingsEditor provider="openai-compatible" model="local"
+		settings={{ provider: "openai-compatible", model: "local", contextWindow: 262144,
+			modelContextLimit: 262144, useDefaultBudget: true }} disabled={false} onChange={onChange} />));
+	expect(container.querySelector('[aria-label="上下文预算"]')).toBeNull();
+	const input = container.querySelector<HTMLInputElement>('[aria-label="最大输出 Token"]')!;
+	expect(input.value).toBe("4");
+	for (const [index, value] of [4096, 8192, 16384, 32768, null].entries()) {
+		if (value === null) {
+			await act(async () => root.render(<ModelSettingsEditor provider="openai-compatible" model="local"
+				settings={{ provider: "openai-compatible", model: "local", contextWindow: 262144,
+					modelContextLimit: 262144, useDefaultBudget: true, maxOutputTokens: 32768 }} disabled={false} onChange={onChange} />));
+		}
+		await act(async () => {
+			Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, String(index));
+			input.dispatchEvent(new Event("input", { bubbles: true }));
+		});
+		expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ maxOutputTokens: value }));
+	}
+});
+
 it("shows the default toggle and saves manual budget changes", async () => {
 	invoke.mockResolvedValue({ limit: 262144 });
 	const onChange = vi.fn();
@@ -103,7 +126,7 @@ it("uses the detected model limit by default and hides the slider", async () => 
 			useDefaultBudget: true,
 		}),
 	);
-	expect(container.querySelector("input[type=range]")).toBeNull();
+	expect(container.querySelector("input[aria-label=上下文预算]")).toBeNull();
 	expect(
 		container
 			.querySelector('[aria-label="使用默认预算"]')
@@ -124,7 +147,7 @@ it("offers 16K to 256K and defaults to 128K without claiming a model limit", asy
 		),
 	);
 	expect(
-		container.querySelector<HTMLInputElement>("input[type=range]")?.disabled,
+		container.querySelector<HTMLInputElement>("input[aria-label=上下文预算]")?.disabled,
 	).toBe(false);
 	expect(
 		[...container.querySelectorAll("button")].map(
@@ -173,7 +196,7 @@ it("toggles a large default budget into a capped manual slider and restores the 
 		);
 	}
 	await act(async () => root.render(<Harness />));
-	expect(container.querySelector('input[type="range"]')).toBeNull();
+	expect(container.querySelector('input[aria-label=上下文预算]')).toBeNull();
 	await act(async () =>
 		container
 			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
@@ -181,7 +204,7 @@ it("toggles a large default budget into a capped manual slider and restores the 
 	);
 	expect(
 		container
-			.querySelector('input[type="range"]')
+			.querySelector('input[aria-label=上下文预算]')
 			?.getAttribute("aria-valuetext"),
 	).toBe("64K");
 	expect(
@@ -194,7 +217,7 @@ it("toggles a large default budget into a capped manual slider and restores the 
 			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
 			.click(),
 	);
-	expect(container.querySelector('input[type="range"]')).toBeNull();
+	expect(container.querySelector('input[aria-label=上下文预算]')).toBeNull();
 	await act(async () =>
 		container
 			.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')!
@@ -202,7 +225,7 @@ it("toggles a large default budget into a capped manual slider and restores the 
 	);
 	expect(
 		container
-			.querySelector('input[type="range"]')
+			.querySelector('input[aria-label=上下文预算]')
 			?.getAttribute("aria-valuetext"),
 	).toBe("64K");
 });
@@ -238,7 +261,7 @@ it.each([
 		),
 	).toEqual(labels);
 	const slider = container.querySelector<HTMLInputElement>(
-		'input[type="range"]',
+		'input[aria-label=上下文预算]',
 	)!;
 	expect(slider.max).toBe(String(labels.length - 1));
 	expect(slider.getAttribute("aria-valuetext")).toBe(labels.at(-1));
@@ -272,7 +295,7 @@ it("keeps models below 16K on their default without inventing a manual stop", as
 			/>,
 		),
 	);
-	expect(container.querySelector('input[type="range"]')).toBeNull();
+	expect(container.querySelector('input[aria-label=上下文预算]')).toBeNull();
 	expect(
 		container.querySelector<HTMLButtonElement>('[aria-label="使用默认预算"]')
 			?.disabled,
@@ -327,7 +350,7 @@ it("does not commit an old model's late query after switching models", async () 
 		),
 	);
 	expect(
-		container.querySelector<HTMLInputElement>("input[type=range]")?.disabled,
+		container.querySelector<HTMLInputElement>("input[aria-label=上下文预算]")?.disabled,
 	).toBe(true);
 	await act(async () =>
 		root.render(
@@ -371,7 +394,7 @@ it("also enables the fallback when the server query fails and ignores old import
 		),
 	);
 	expect(
-		container.querySelector<HTMLInputElement>("input[type=range]")?.disabled,
+		container.querySelector<HTMLInputElement>("input[aria-label=上下文预算]")?.disabled,
 	).toBe(false);
 	expect(onChange).toHaveBeenCalledWith(
 		expect.objectContaining({

@@ -10,6 +10,9 @@ import {
 	type ModelRuntimeSettings,
 } from "@/lib/model-runtime-settings";
 
+const OUTPUT_STEPS = [4096, 8192, 16384, 32768, null] as const;
+const OUTPUT_LABELS = ["4K", "8K", "16K", "32K", "不限"];
+
 export function ModelSettingsEditor({
 	provider,
 	model,
@@ -29,6 +32,16 @@ export function ModelSettingsEditor({
 	const [querying, setQuerying] = useState(true);
 	const [serverLimit, setServerLimit] = useState<number>();
 	const [error, setError] = useState("");
+	const outputIndex = OUTPUT_STEPS.indexOf(settings?.maxOutputTokens ?? null);
+	function applyOutput(index: number) {
+		if (disabled || !Number.isInteger(index) || index < 0 || index >= OUTPUT_STEPS.length) return;
+		try {
+			onChange({ ...settings, provider, model, maxOutputTokens: OUTPUT_STEPS[index] });
+			setError("");
+		} catch {
+			setError("设置保存失败，请重试。");
+		}
+	}
 	const knownLimit =
 		serverLimit && Number.isSafeInteger(serverLimit) && serverLimit >= 1024
 			? serverLimit
@@ -197,6 +210,17 @@ export function ModelSettingsEditor({
 					</div>
 				</>
 			)}
+			<label className="block space-y-2">
+				<span className="flex justify-between"><span>最大输出 Token</span><span>{OUTPUT_LABELS[outputIndex]}</span></span>
+				<input aria-label="最大输出 Token" aria-valuetext={OUTPUT_LABELS[outputIndex]}
+					className="w-full accent-primary" type="range" min={0} max={4} step={1}
+					value={outputIndex} disabled={disabled} onChange={(event) => applyOutput(Number(event.target.value))} />
+			</label>
+			<div className="flex justify-between gap-1">
+				{OUTPUT_LABELS.map((label, index) => <span key={label}
+					className={`rounded px-1 py-0.5 text-xs disabled:opacity-50 ${index === outputIndex ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+					>{label}</span>)}
+			</div>
 			{error && (
 				<p role="alert" className="text-xs text-destructive">
 					{error}

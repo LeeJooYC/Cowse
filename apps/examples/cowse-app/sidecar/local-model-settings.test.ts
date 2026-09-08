@@ -21,6 +21,13 @@ const settings = {
 };
 
 describe("local model settings", () => {
+	it.each([4096, 8192, 16384, 32768, null])("projects output limit %s on create and update", (maxOutputTokens) => {
+		const config = { provider: settings.provider, model: settings.model,
+			modelSettings: { ...settings, maxOutputTokens } };
+		for (const result of [buildCoreSessionConfig(config), buildSessionConnectionUpdate(config)]) {
+			expect(result.providerConfig).toHaveProperty("maxOutputTokens", maxOutputTokens ?? 0);
+		}
+	});
 	it("queries context metadata for the exact selected model, not output length", async () => {
 		const fetchMock = vi.fn(async (_url: URL) =>
 			Response.json({
@@ -70,12 +77,12 @@ describe("local model settings", () => {
 		).toBeUndefined();
 	});
 	it("keeps unknown controls conservative and preserves the advertised levels", () => {
-		expect(reasoningChoices(undefined)).toEqual(["default"]);
+		expect(reasoningChoices(undefined)).toEqual(["on", "none"]);
 		expect(
 			reasoningChoices([
 				{ type: "effort", values: ["none", "low", "medium", "xhigh"] },
 			]),
-		).toEqual(["default", "none", "low", "medium", "xhigh"]);
+		).toEqual(["none", "low", "medium", "xhigh"]);
 	});
 	it("projects the budget but ignores legacy custom reasoning declarations", () => {
 		const config = {

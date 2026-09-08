@@ -917,7 +917,7 @@ describe("ChatInputBar", () => {
 		expect(textarea?.value).toBe("draft one");
 	});
 
-	it("preserves an explicit High selection across capability and status updates", async () => {
+	it("normalizes an unavailable strength to explicit on across status updates", async () => {
 		const onReasoningChange = vi.fn();
 		const onOpenVoiceInputSettings = vi.fn();
 		const render = async (status: ChatSessionStatus) => {
@@ -988,7 +988,7 @@ describe("ChatInputBar", () => {
 			const trigger = container.querySelector<HTMLButtonElement>(
 				'[aria-label="思考强度"]',
 			);
-			expect(trigger?.textContent).toContain("高");
+			expect(trigger?.textContent).toContain("开启");
 			expect(trigger?.disabled).toBe(false);
 			expect(
 				trigger?.querySelector('[data-slot="select-value"]')?.parentElement
@@ -1044,7 +1044,7 @@ describe("ChatInputBar", () => {
 		await render("running");
 		expect(container.querySelector('[aria-label="停止任务"]')).not.toBeNull();
 
-		expect(onReasoningChange).not.toHaveBeenCalled();
+		expect(onReasoningChange).toHaveBeenCalledWith({ thinking: true, reasoningEffort: undefined });
 		const providerTrigger = container.querySelector<HTMLButtonElement>(
 			'[aria-label^="Provider:"]',
 		);

@@ -34,6 +34,12 @@ export function resolvePortableReasoning(
 	if (!reasoning) {
 		return undefined;
 	}
+	// Explicit compatible-server toggles are encoded as enable_thinking,
+	// not a fabricated medium reasoning_effort.
+	if (["openai", "openai-compatible"].includes(request.providerId) &&
+		!reasoning.effort && reasoning.budgetTokens === undefined) {
+		return undefined;
+	}
 	const fullySupported = PORTABLE_REASONING_PROVIDERS.has(request.providerId);
 	if (reasoning.enabled === false) {
 		return fullySupported ? "none" : undefined;

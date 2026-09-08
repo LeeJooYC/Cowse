@@ -154,12 +154,12 @@ const FALLBACK_PROVIDER_REASONING_MODELS: Record<string, string[]> = {
 type ReasoningEffort = NonNullable<ChatSessionConfig["reasoningEffort"]>;
 type ReasoningEffortOption = {
 	label: string;
-	value: "default" | "none" | ReasoningEffort;
+	value: "on" | "none" | ReasoningEffort;
 };
 
 const DEFAULT_REASONING_EFFORT: ReasoningEffortOption = {
-	label: "默认",
-	value: "default",
+	label: "开启",
+	value: "on",
 };
 
 const EFFORT_LEVELS: ReasoningEffortOption[] = [
@@ -209,8 +209,8 @@ function resolveEffortIndex(
 function buildReasoningConfig(
 	option: ReasoningEffortOption,
 ): Pick<ChatSessionConfig, "thinking" | "reasoningEffort"> {
-	if (option.value === "default")
-		return { thinking: null, reasoningEffort: undefined };
+	if (option.value === "on")
+		return { thinking: true, reasoningEffort: undefined };
 	if (option.value === "none") {
 		return { thinking: false, reasoningEffort: undefined };
 	}
@@ -826,8 +826,21 @@ function ChatInputBarImpl({
 			? reasoningCapability.options
 			: undefined,
 	);
-	const selectedEffort = EFFORT_LEVELS[effortIndex]?.value ?? "default";
-	const effortLabel = REASONING_LABELS[selectedEffort] ?? "默认";
+	const previousEffort = EFFORT_LEVELS[effortIndex]?.value ?? "on";
+	const selectedEffort = availableEfforts.includes(previousEffort)
+		? previousEffort
+		: availableEfforts.includes("medium") ? "medium" : availableEfforts[0];
+	const effortLabel = REASONING_LABELS[selectedEffort];
+	useEffect(() => {
+		if (isBusy) return;
+		if (reasoningCapability?.provider !== provider || reasoningCapability.model !== model) return;
+		const option = EFFORT_LEVELS.find((item) => item.value === selectedEffort);
+		if (!option) return;
+		const next = buildReasoningConfig(option);
+		if (thinking !== next.thinking || reasoningEffort !== next.reasoningEffort) {
+			onReasoningChange(next);
+		}
+	}, [selectedEffort, thinking, reasoningEffort, isBusy, onReasoningChange, reasoningCapability, provider, model]);
 	const promptInputRows =
 		variant === "welcome" || promptInputFocused
 			? PROMPT_INPUT_EXPANDED_ROWS

@@ -5,6 +5,7 @@ import type {
 } from "@cline/shared";
 import { describe, expect, it, vi } from "vitest";
 import { isOpenAIReasoningEraModelId } from "../model-facts";
+import { composeAiSdkProviderOptions } from "../routing/provider-options";
 import {
 	createOpenAICompatibleProviderModule,
 	withMaxCompletionTokensForReasoningModels,
@@ -178,6 +179,33 @@ describe("createOpenAICompatibleProviderModule wire format", () => {
 			toolName: "read_file",
 			input: '{"path":"a.txt"}',
 		});
+	});
+});
+
+describe("explicit compatible thinking wire format", () => {
+	it("does not add a generic toggle to known effort models", () => {
+		const ctx = context();
+		ctx.model.reasoningOptions = [{ type: "effort", values: ["low", "high"] }];
+		const options = composeAiSdkProviderOptions({
+			providerId: "openai-compatible", modelId: "known",
+			messages: [], reasoning: { enabled: true, effort: "high" },
+		}, ctx, "openai-compatible");
+		for (const bucket of Object.values(options)) {
+			expect(bucket).not.toHaveProperty("enable_thinking");
+		}
+	});
+	it.each([true, false])("sends enable_thinking=%s", async (enabled) => {
+		const fetchMock = createFetchMock(jsonCompletionResponse("custom-qwen"));
+		const model = await createModel({ modelId: "custom-qwen", fetchMock });
+		const providerOptions = composeAiSdkProviderOptions({
+			providerId: "openai-compatible", modelId: "custom-qwen",
+			messages: [], reasoning: { enabled },
+		}, context(), "openai-compatible");
+		await model.doGenerate({
+			prompt: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+			providerOptions: providerOptions as never,
+		});
+		expect(capturedBody(fetchMock)).toHaveProperty("enable_thinking", enabled);
 	});
 });
 

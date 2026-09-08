@@ -191,6 +191,9 @@ export function resolveGatewayRequestMaxTokens(input: {
 		reserveTokens: number;
 	}) => void;
 }): number | undefined {
+	// Explicit zero means backend-managed output, distinct from an omitted
+	// preference which still uses the gateway's conservative default.
+	if (input.requestedMaxTokens === 0) return undefined;
 	const caps: number[] = [];
 	if (isPositiveFiniteNumber(input.requestedMaxTokens)) {
 		caps.push(Math.floor(input.requestedMaxTokens));

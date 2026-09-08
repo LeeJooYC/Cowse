@@ -28,6 +28,14 @@ vi.mock("@cline/llms", async (importOriginal) => ({
 }));
 
 describe("createAgentModelFromConfig", () => {
+	it.each([4096, 8192, 16384, 32768, undefined])("preserves provider output budget %s", async (maxOutputTokens) => {
+		const { createAgentModelFromConfig } = await import("./handler-factory");
+		createAgentModelFromConfig({ providerId: "openai", modelId: "local",
+			providerConfig: { providerId: "openai", maxOutputTokens },
+		} as AgentConfig, undefined);
+		expect(gatewayMock.createAgentModel).toHaveBeenLastCalledWith(
+			expect.anything(), expect.objectContaining({ maxTokens: maxOutputTokens }));
+	});
 	beforeEach(() => {
 		gatewayMock.createAgentModel.mockReset();
 		gatewayMock.createGateway.mockClear();
