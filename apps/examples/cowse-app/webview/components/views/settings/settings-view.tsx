@@ -84,7 +84,6 @@ export {
 
 type GlobalSettingsResponse = {
 	telemetryOptOut: boolean;
-	autoUpdateEnabled: boolean;
 	tools?: Partial<Record<"web_search", { enabled: boolean }>>;
 };
 
@@ -723,10 +722,6 @@ function GeneralSettingsContent({
 	const [telemetryLoading, setTelemetryLoading] = useState(true);
 	const [telemetrySaving, setTelemetrySaving] = useState(false);
 	const [telemetryError, setTelemetryError] = useState<string | null>(null);
-	const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
-	const [autoUpdateLoading, setAutoUpdateLoading] = useState(true);
-	const [autoUpdateSaving, setAutoUpdateSaving] = useState(false);
-	const [autoUpdateError, setAutoUpdateError] = useState<string | null>(null);
 	const [webSearchEnabled, setWebSearchEnabled] = useState(false);
 	const [webSearchLoading, setWebSearchLoading] = useState(true);
 	const [webSearchSaving, setWebSearchSaving] = useState(false);
@@ -798,8 +793,6 @@ function GeneralSettingsContent({
 	const loadGlobalSettings = useCallback(async () => {
 		setTelemetryLoading(true);
 		setTelemetryError(null);
-		setAutoUpdateLoading(true);
-		setAutoUpdateError(null);
 		setWebSearchLoading(true);
 		setWebSearchError(null);
 		try {
@@ -807,16 +800,13 @@ function GeneralSettingsContent({
 				"get_global_settings",
 			);
 			setTelemetryOptOut(settings.telemetryOptOut);
-			setAutoUpdateEnabled(settings.autoUpdateEnabled);
 			setWebSearchEnabled(settings.tools?.web_search?.enabled === true);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			setTelemetryError(message);
-			setAutoUpdateError(message);
 			setWebSearchError(message);
 		} finally {
 			setTelemetryLoading(false);
-			setAutoUpdateLoading(false);
 			setWebSearchLoading(false);
 		}
 	}, []);
@@ -845,26 +835,6 @@ function GeneralSettingsContent({
 			setTelemetryError(message);
 		} finally {
 			setTelemetrySaving(false);
-		}
-	};
-
-	const updateAutoUpdateEnabled = async (nextValue: boolean) => {
-		const previousValue = autoUpdateEnabled;
-		setAutoUpdateEnabled(nextValue);
-		setAutoUpdateSaving(true);
-		setAutoUpdateError(null);
-		try {
-			const settings = await desktopClient.invoke<GlobalSettingsResponse>(
-				"set_auto_update_enabled",
-				{ auto_update_enabled: nextValue },
-			);
-			setAutoUpdateEnabled(settings.autoUpdateEnabled);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			setAutoUpdateEnabled(previousValue);
-			setAutoUpdateError(message);
-		} finally {
-			setAutoUpdateSaving(false);
 		}
 	};
 
@@ -1108,28 +1078,6 @@ function GeneralSettingsContent({
 						checked={webSearchEnabled}
 						disabled={webSearchLoading || webSearchSaving}
 						onCheckedChange={(checked) => void updateWebSearchEnabled(checked)}
-					/>
-				</div>
-				<div className="flex py-4 items-center justify-between gap-5 border-b max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:py-4">
-					<div className="flex flex-col gap-1">
-						<p className="text-base font-semibold text-foreground">
-							保持 CLI 为最新版本
-						</p>
-						<p className="text-sm text-muted-foreground">
-							自动更新 cline
-							终端命令。它与本应用共享会话和设置；应用本身会单独更新。
-						</p>
-						{autoUpdateError ? (
-							<p className="mt-2 text-xs text-destructive" role="alert">
-								更新 CLI 自动更新设置失败：{autoUpdateError}
-							</p>
-						) : null}
-					</div>
-					<Switch
-						aria-label="保持 CLI 为最新版本"
-						checked={autoUpdateEnabled}
-						disabled={autoUpdateLoading || autoUpdateSaving}
-						onCheckedChange={(checked) => void updateAutoUpdateEnabled(checked)}
 					/>
 				</div>
 				<div className="flex py-4 items-center justify-between gap-5 border-b max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:py-4">

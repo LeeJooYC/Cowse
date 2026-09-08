@@ -85,6 +85,7 @@ describe("app branding settings", () => {
 			),
 		);
 		expect(container.textContent).not.toContain("应用图标");
+		expect(container.textContent).not.toContain("保持 CLI 为最新版本");
 		expect(container.querySelector('img[src^="/app-icons/"]')).toBeNull();
 		expect(container.textContent).toContain("强调色");
 		const text = container.textContent!;

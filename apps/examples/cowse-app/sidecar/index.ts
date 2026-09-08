@@ -3,6 +3,7 @@ import {
 	checkManagedHubBuildMismatch,
 	createClineTelemetryServiceConfig,
 	readGlobalSettings,
+	setAutoUpdateEnabledGlobally,
 	setHomeDirIfUnset,
 	setModelToolEnabledGlobally,
 	watchManagedHubBuildMismatch,
@@ -243,6 +244,8 @@ async function runEntrypoint(): Promise<void> {
 	// never reached — without this the daemon's requests never carried the
 	// configured proxy.
 	applyProxyFromDisk();
+	// Cowse is updated only by manually replacing the app bundle.
+	setAutoUpdateEnabledGlobally(false);
 	// Claim rather than read: consuming the sentinel keeps daemon-hosted sessions
 	// from handing it to every process they spawn.
 	if (claimHubDaemonProcess()) {

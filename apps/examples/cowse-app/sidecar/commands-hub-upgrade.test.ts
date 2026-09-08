@@ -34,6 +34,10 @@ beforeEach(() => {
 });
 
 describe("hub_upgrade command", () => {
+	it("rejects enabling automatic updates", async () => {
+		const { handleCommand } = await import("./commands");
+		await expect(handleCommand(createContext(), "set_auto_update_enabled", { auto_update_enabled: true })).rejects.toThrow("禁用自动更新");
+	});
 	it("rejects full quit from untrusted websocket connections", async () => {
 		const { handleCommand } = await import("./commands");
 		for (const options of [{}, { connection: connection(false) }]) {

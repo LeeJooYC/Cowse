@@ -720,11 +720,10 @@ fn quit_app(app: tauri::AppHandle) {
 /// relaunch the same version.
 #[tauri::command]
 async fn check_for_update_now(
-    app: tauri::AppHandle,
-    update_state: State<'_, Arc<UpdateState>>,
+    _app: tauri::AppHandle,
+    _update_state: State<'_, Arc<UpdateState>>,
 ) -> Result<UpdateStatus, String> {
-    check_and_install_update(&app, update_state.inner()).await;
-    Ok(update_state.snapshot())
+    Err("牛马已禁用应用更新，请手动下载安装包。".into())
 }
 
 /// Icon ids accepted by `set_app_icon`; kept in sync with APP_ICONS in

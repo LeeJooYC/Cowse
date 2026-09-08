@@ -2259,7 +2259,8 @@ export async function handleCommand(
 		if (typeof args?.auto_update_enabled !== "boolean") {
 			throw new Error("auto_update_enabled must be a boolean");
 		}
-		setAutoUpdateEnabledGlobally(args.auto_update_enabled);
+		if (args.auto_update_enabled) throw new Error("牛马已禁用自动更新，请手动下载安装包。");
+		setAutoUpdateEnabledGlobally(false);
 		return readGlobalSettings();
 	}
 	if (command === "set_web_search_enabled") {
