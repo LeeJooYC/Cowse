@@ -44,6 +44,7 @@ const MODE_OPTIONS: Array<{ value: ProxyMode; label: string }> = [
 
 export function ProxySettings() {
 	const [config, setConfig] = useState<ProxyConfig>(EMPTY_CONFIG);
+	const [savedConfig, setSavedConfig] = useState<ProxyConfig | null>(null);
 	const [loaded, setLoaded] = useState(false);
 	const [detecting, setDetecting] = useState(false);
 	const [detected, setDetected] = useState<DetectedProxy[]>([]);
@@ -56,7 +57,7 @@ export function ProxySettings() {
 		void desktopClient
 			.invoke<ProxyConfig>("get_proxy_config")
 			.then((saved) => {
-				if (!cancelled) setConfig(saved);
+				if (!cancelled) { setConfig(saved); setSavedConfig(saved); }
 			})
 			.catch(() => undefined)
 			.finally(() => {
@@ -76,6 +77,7 @@ export function ProxySettings() {
 				config: next,
 			});
 			setConfig(saved);
+			setSavedConfig(saved);
 			setNotice(saved.mode === "off" ? null : "代理设置已保存并生效。");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
@@ -105,7 +107,12 @@ export function ProxySettings() {
 	return (
 		<div className="border-b py-4">
 			<div className="flex items-center justify-between gap-4 max-[720px]:flex-wrap">
-				<p className="text-base font-semibold text-foreground">本地代理</p>
+				<div className="min-w-0 flex flex-col gap-1">
+					<p className="text-base font-semibold text-foreground">本地代理</p>
+					<p className="text-sm text-muted-foreground break-all" role="status">
+						当前状态：{!loaded ? "正在读取…" : !savedConfig ? "读取失败" : savedConfig.mode === "off" ? "未启用" : `已启用（${savedConfig.mode === "auto" ? "自动" : "手动"}） · ${PROTOCOL_LABELS[savedConfig.protocol]} · ${savedConfig.host}:${savedConfig.port}`}
+					</p>
+				</div>
 
 			<div className="flex shrink-0 gap-1 rounded-lg border p-1" role="group" aria-label="本地代理模式">
 				{MODE_OPTIONS.map((option) => (
@@ -198,7 +205,7 @@ export function ProxySettings() {
 						<label className="flex flex-col gap-1 text-sm">
 							<span className="text-muted-foreground">协议</span>
 							<select
-								className="rounded-md border bg-background px-3 py-2 text-sm"
+								className="h-10 box-border appearance-none rounded-md border bg-background px-3 py-2 text-sm"
 								value={config.protocol}
 								disabled={saving}
 								onChange={(event) =>
@@ -213,7 +220,7 @@ export function ProxySettings() {
 						<label className="flex flex-col gap-1 text-sm">
 							<span className="text-muted-foreground">主机</span>
 							<input
-								className="rounded-md border bg-background px-3 py-2 text-sm"
+								className="h-10 box-border appearance-none rounded-md border bg-background px-3 py-2 text-sm"
 								value={config.host}
 								disabled={saving}
 								placeholder="127.0.0.1"
@@ -223,7 +230,7 @@ export function ProxySettings() {
 						<label className="flex flex-col gap-1 text-sm">
 							<span className="text-muted-foreground">端口</span>
 							<input
-								className="rounded-md border bg-background px-3 py-2 text-sm"
+								className="h-10 box-border appearance-none rounded-md border bg-background px-3 py-2 text-sm"
 								type="number"
 								value={config.port || ""}
 								disabled={saving}
@@ -240,7 +247,7 @@ export function ProxySettings() {
 						<label className="flex flex-col gap-1 text-sm">
 							<span className="text-muted-foreground">用户名（可选）</span>
 							<input
-								className="rounded-md border bg-background px-3 py-2 text-sm"
+								className="h-10 box-border appearance-none rounded-md border bg-background px-3 py-2 text-sm"
 								value={config.username}
 								disabled={saving}
 								autoComplete="off"
@@ -250,7 +257,7 @@ export function ProxySettings() {
 						<label className="flex flex-col gap-1 text-sm">
 							<span className="text-muted-foreground">密码（可选）</span>
 							<input
-								className="rounded-md border bg-background px-3 py-2 text-sm"
+								className="h-10 box-border appearance-none rounded-md border bg-background px-3 py-2 text-sm"
 								type="password"
 								value={config.password}
 								disabled={saving}
