@@ -31,6 +31,7 @@ const VIEW_ZOOM_RESET_MENU_ID: &str = "view-zoom-reset";
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 enum DesktopAction {
+    FullQuit,
     ZoomIn,
     ZoomOut,
     ZoomReset,
@@ -1092,7 +1093,13 @@ fn main() {
                 has_visible_windows: false,
                 ..
             } => show_main_window(app_handle),
-            RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+            RunEvent::ExitRequested { api, code: None, .. } => {
+                // Native Quit / Command-Q must pass the same idle-Hub guard
+                // as settings. Explicit app.exit(code) keeps its existing role.
+                api.prevent_exit();
+                queue_desktop_action(app_handle, DesktopAction::FullQuit);
+            }
+            RunEvent::Exit => {
                 app_handle
                     .state::<Arc<DesktopBackendState>>()
                     .inner()

@@ -51,12 +51,6 @@ async function main() {
 		throw new Error("sidecar must be run with Bun");
 	}
 
-	// Route every outbound request (model inference, marketplace, telemetry)
-	// through a locally configured proxy before any fetch happens. Bun's
-	// fetch only honors a per-request proxy option, so this installs a
-	// proxy-injecting global fetch wrapper from the persisted config.
-	applyProxyFromDisk();
-
 	// When launched from Finder/the Dock the app inherits launchd's minimal
 	// PATH, so agent-spawned processes can't find shell-profile-installed
 	// tools like `gh`. Kick resolution off first so it overlaps the rest of
@@ -239,6 +233,16 @@ async function runEntrypoint(): Promise<void> {
 		runTelemetrySelfcheck();
 		return;
 	}
+	// Route every outbound request (model inference, marketplace, telemetry,
+	// token refresh, auth) through a locally configured proxy before any
+	// fetch happens. Bun's fetch only honors a per-request proxy option, so
+	// this installs a proxy-injecting global fetch wrapper from the persisted
+	// config. This has to run before the daemon split below: when this process
+	// is launched as the shared Hub daemon (CLINE_RUN_AS_HUB_DAEMON=1), the
+	// agent loop and model requests live in this same process and main() is
+	// never reached — without this the daemon's requests never carried the
+	// configured proxy.
+	applyProxyFromDisk();
 	// Claim rather than read: consuming the sentinel keeps daemon-hosted sessions
 	// from handing it to every process they spawn.
 	if (claimHubDaemonProcess()) {

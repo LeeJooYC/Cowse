@@ -6,6 +6,7 @@ import { desktopClient, isTauriAvailable } from "@/lib/desktop-client";
 export const DESKTOP_ACTION_PENDING_EVENT = "desktop-action-pending";
 
 export type DesktopAction =
+	| { type: "full-quit" }
 	| { type: AppZoomAction }
 	| { type: "open-session"; sessionId: string };
 
@@ -14,7 +15,7 @@ function isDesktopAction(value: unknown): value is DesktopAction {
 		return false;
 	}
 	const action = value as { type?: unknown; sessionId?: unknown };
-	if (isAppZoomAction(action.type)) {
+	if (action.type === "full-quit" || isAppZoomAction(action.type)) {
 		return true;
 	}
 	return (

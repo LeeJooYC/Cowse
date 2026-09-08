@@ -68,6 +68,7 @@ import {
 	desktopAppReducer,
 } from "@/lib/desktop-app-state";
 import { desktopClient } from "@/lib/desktop-client";
+import { requestFullQuit } from "@/lib/full-quit";
 import { watchDesktopNotifications } from "@/lib/desktop-notifications";
 import { subscribeToDesktopActions } from "@/lib/desktop-tray";
 import { syncDesktopWindowTitle } from "@/lib/desktop-window-title";
@@ -397,6 +398,11 @@ export default function Home() {
 		() =>
 			subscribeToDesktopActions((action) => {
 				switch (action.type) {
+					case "full-quit":
+						void requestFullQuit().catch((error) => {
+							toast({ title: "无法完全退出", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
+						});
+						break;
 					case "open-session":
 						void handleOpenSessionById(action.sessionId);
 						break;

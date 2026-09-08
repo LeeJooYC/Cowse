@@ -603,6 +603,13 @@ export function hasProviderChanged(
 }
 
 export async function resolveSystemPrompt(config: JsonRecord): Promise<string> {
+	const prompt = await resolveCoreSystemPrompt(config);
+	// Brand only the host identity, not technical references or generated replies.
+	const branded = prompt.replace(/^You are Cline(?=,)/, "You are 牛马 (Cowse)");
+	return `${branded}\n\n# Cowse Desktop Identity\n\nYour product-facing name is 牛马 (Cowse). When introducing yourself in Chinese, say “我是牛马”; in English, use “I am Cowse”. Cline Core is your underlying runtime, not your product-facing name. Preserve accurate references to Cline, Cline Core, provider names, tools, APIs, and source attribution when discussing them. Your product name does not identify the underlying model or its provider; do not invent that information.`.trim();
+}
+
+async function resolveCoreSystemPrompt(config: JsonRecord): Promise<string> {
 	const cwd = String(
 		config.cwd ?? config.workspaceRoot ?? config.workspace_root ?? "",
 	).trim();

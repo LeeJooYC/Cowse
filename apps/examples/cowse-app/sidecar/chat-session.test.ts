@@ -100,13 +100,26 @@ describe("resolveDesktopSessionMode", () => {
 				systemPrompt: "Custom",
 				preferredLanguage: "en",
 			}),
-		).toBe("Custom\n\n# Preferred Language\n\nSpeak in en.");
+		).toContain("Custom\n\n# Preferred Language\n\nSpeak in en.");
 		expect(
 			await resolveSystemPrompt({
 				systemPrompt: "Custom",
 				preferredLanguage: "default",
 			}),
-		).toBe("Custom");
+		).toContain("Custom");
+	});
+	it.each(["plan", "act", "yolo"])("uses Cowse identity in %s mode", async (mode) => {
+		const prompt = await resolveSystemPrompt({ cwd: "/tmp", mode });
+		expect(prompt).not.toMatch(/^You are Cline,/);
+		expect(prompt).toContain("我是牛马");
+		expect(prompt).toContain("Cline Core is your underlying runtime");
+	});
+	it("brands chat and custom prompts without renaming technical references", async () => {
+		for (const config of [{}, { systemPrompt: "Use Cline Core and ClinePass." }]) {
+			const prompt = await resolveSystemPrompt(config);
+			expect(prompt).toContain("我是牛马");
+			if (config.systemPrompt) expect(prompt).toContain(config.systemPrompt);
+		}
 	});
 	it("does not turn auto-approved Act sessions into Yolo sessions", () => {
 		expect(

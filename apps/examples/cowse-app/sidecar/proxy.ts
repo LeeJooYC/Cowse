@@ -75,8 +75,9 @@ export function writeProxyConfig(config: ProxyConfig): void {
 // Bun's fetch does not read HTTP_PROXY/HTTPS_PROXY, but it does accept a
 // per-request `proxy` option. Cline Core / the LLM SDK issue model requests
 // through `globalThis.fetch`, so replacing the global with a proxy-injecting
-// wrapper routes every request through the configured local proxy.
-const nativeFetch = globalThis.fetch;
+// wrapper routes every request through the configured local proxy. The native
+// fetch is captured at apply time (startup), so tests can substitute a mock
+// before applying.
 
 function proxyUrl(config: ProxyConfig): string | null {
 	if (config.mode !== "auto" && config.mode !== "manual") {
@@ -94,14 +95,24 @@ function proxyUrl(config: ProxyConfig): string | null {
 	return `${scheme}://${auth}${host}:${config.port}`;
 }
 
-export function applyProxyConfig(config: ProxyConfig): void {
-	const url = proxyUrl(config);
-	if (!url) {
-		globalThis.fetch = nativeFetch;
-		return;
-	}
-	globalThis.fetch = ((input, init) =>
-		nativeFetch(input as never, { ...init, proxy: url } as never)) as typeof fetch;
+export function applyProxyConfig(_config: ProxyConfig): void {
+	// Capture the current fetch (Bun's native implementation at startup) so
+	// repeated applies never stack wrappers on top of one another.
+	const native = globalThis.fetch;
+	// Don't close over the saved config. Config writes (save_proxy_config) run
+	// in the sidecar process, but model/session requests are issued by the
+	// shared Hub daemon — a separate process that only installs this wrapper
+	// at startup. Re-reading the persisted config on every request makes a
+	// config change (including enabling/disabling the proxy) take effect in
+	// the daemon immediately, at the cost of one tiny file read per outbound
+	// request.
+	globalThis.fetch = ((input, init) => {
+		const url = proxyUrl(readProxyConfig());
+		if (!url) {
+			return native(input as never, init);
+		}
+		return native(input as never, { ...init, proxy: url } as never);
+	}) as typeof fetch;
 }
 
 export function applyProxyFromDisk(): void {
