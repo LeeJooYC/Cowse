@@ -293,7 +293,7 @@ export function SettingsView({
 				// Pick up sidecar-computed readiness (`configured`) for the
 				// just-saved settings so the Configured badge and count update
 				// without a remount.
-				void resyncProviderCatalog();
+				await resyncProviderCatalog();
 				return true;
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
@@ -322,16 +322,6 @@ export function SettingsView({
 	);
 
 	const providerDraftsRef = useRef<Record<string, ProviderSettingsUpdate>>({});
-	const connectProvider = useCallback(
-		(id: string) => {
-			// Persist an (empty) settings entry so the provider is enabled with
-			// whatever credentials it resolves at runtime (env vars, local CLI,
-			// keyless endpoints).
-			catalogGenerationRef.current++;
-			void persistProviderSettings(id, { ...providerDraftsRef.current[id], enabled: true });
-		},
-		[persistProviderSettings, setProvidersWithCache],
-	);
 
 	const disconnectProvider = useCallback(
 		async (id: string) => {
@@ -406,6 +396,17 @@ export function SettingsView({
 			}
 		},
 		[setProvidersWithCache],
+	);
+
+	const connectProvider = useCallback(
+		async (id: string) => {
+			catalogGenerationRef.current++;
+			const saved = await persistProviderSettings(id, {
+				...providerDraftsRef.current[id], enabled: true,
+			});
+			if (saved) await loadProviderModels(id, { fresh: true });
+		},
+		[persistProviderSettings, loadProviderModels],
 	);
 
 	const updateProviderModels = useCallback(

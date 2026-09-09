@@ -171,6 +171,7 @@ describe("SettingsView provider navigation", () => {
 		});
 		await act(async () => root.render(<SettingsView section="Models" onNavigateSection={vi.fn()} />));
 		await act(async () => window.dispatchEvent(new Event("focus")));
+		await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
 		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent?.includes("Draft test provider"))!.click());
 		const input = container.querySelector('input[type="password"]') as HTMLInputElement;
 		expect(input).not.toBeNull();
@@ -185,6 +186,21 @@ describe("SettingsView provider navigation", () => {
 		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent === "连接")!.click());
 		expect(invoke).toHaveBeenCalledWith("save_provider_settings", expect.objectContaining({api_key: "test-draft-key", enabled: true}));
 		expect(container.textContent).toContain("保存并重连");
+		const saveIndex = invoke.mock.calls.findIndex(([command]) => command === "save_provider_settings");
+		expect(invoke.mock.calls.slice(saveIndex + 1)).toContainEqual(["list_provider_models", {provider: "moonshot", fresh: true}]);
+		invoke.mockClear();
+		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent === "保存并重连")!.click());
+		expect(invoke).toHaveBeenCalledWith("list_provider_models", {provider: "moonshot", fresh: true});
+		const alert = vi.spyOn(window, "alert").mockImplementation(() => {});
+		const previousImpl = invoke.getMockImplementation()!;
+		invoke.mockImplementation(async (...args: any[]) => {
+			if (args[0] === "save_provider_settings") throw new Error("save failed");
+			return previousImpl(...args);
+		});
+		invoke.mockClear();
+		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent === "保存并重连")!.click());
+		expect(invoke.mock.calls.some(([command]) => command === "list_provider_models")).toBe(false);
+		alert.mockRestore();
 	});
 	it("recovers persisted OAuth status on focus, auth events, and reentry", async () => {
 		let connected = false;
