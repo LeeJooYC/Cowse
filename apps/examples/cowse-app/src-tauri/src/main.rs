@@ -936,18 +936,18 @@ fn setup_application_menu(app: &tauri::App) -> tauri::Result<()> {
             }
         }
     }
-    let zoom_in = MenuItem::with_id(app, VIEW_ZOOM_IN_MENU_ID, "Zoom In", true, None::<&str>)?;
+    let zoom_in = MenuItem::with_id(app, VIEW_ZOOM_IN_MENU_ID, "放大", true, None::<&str>)?;
     let zoom_out = MenuItem::with_id(
         app,
         VIEW_ZOOM_OUT_MENU_ID,
-        "Zoom Out",
+        "缩小",
         true,
         Some("CmdOrCtrl+-"),
     )?;
     let zoom_reset = MenuItem::with_id(
         app,
         VIEW_ZOOM_RESET_MENU_ID,
-        "Actual Size",
+        "实际大小",
         true,
         Some("CmdOrCtrl+0"),
     )?;
@@ -956,7 +956,8 @@ fn setup_application_menu(app: &tauri::App) -> tauri::Result<()> {
     let mut view_menu = None;
     for item in menu.items()? {
         if let MenuItemKind::Submenu(submenu) = item {
-            if submenu.text()? == "View" {
+            // Tauri creates this menu in English; also accept our localized title.
+            if matches!(submenu.text()?.as_str(), "View" | "视图") {
                 view_menu = Some(submenu);
                 break;
             }
@@ -964,15 +965,16 @@ fn setup_application_menu(app: &tauri::App) -> tauri::Result<()> {
     }
 
     if let Some(view_menu) = view_menu {
+        view_menu.set_text("视图")?;
         view_menu.prepend_items(&[&zoom_in, &zoom_out, &zoom_reset, &separator])?;
     } else {
         let view_menu =
-            Submenu::with_items(app, "View", true, &[&zoom_in, &zoom_out, &zoom_reset])?;
+            Submenu::with_items(app, "视图", true, &[&zoom_in, &zoom_out, &zoom_reset])?;
         menu.append(&view_menu)?;
     }
 
     app.set_menu(menu)?;
-    set_macos_menu_key_equivalent("View", "Zoom In", "+")?;
+    set_macos_menu_key_equivalent("视图", "放大", "+")?;
     app.on_menu_event(|app, event| {
         if let Some(action) = application_menu_action(event.id().as_ref()) {
             queue_desktop_action(app, action);

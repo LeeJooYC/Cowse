@@ -149,7 +149,7 @@ describe("DiffView file actions", () => {
 			);
 		});
 
-		await click(buttonWithLabel("Copy file path for docs/a.mdx"));
+		await click(buttonWithLabel("复制文件路径：docs/a.mdx"));
 
 		expect(writeText).toHaveBeenCalledWith("/Users/renee/cline/docs/a.mdx");
 	});
@@ -165,10 +165,10 @@ describe("DiffView file actions", () => {
 			);
 		});
 
-		await pointerDown(buttonWithLabel("Open docs/a.mdx in editor"));
+		await pointerDown(buttonWithLabel("在编辑器中打开 docs/a.mdx"));
 
 		const labels = menuItems().map((item) => item.textContent);
-		expect(labels).toEqual(["VS Code", "System default"]);
+		expect(labels).toEqual(["VS Code", "系统默认"]);
 
 		const vscodeItem = menuItems().find(
 			(item) => item.textContent === "VS Code",
@@ -194,10 +194,10 @@ describe("DiffView file actions", () => {
 			root.render(<DiffView fileDiffs={[FILE_DIFF]} onClose={vi.fn()} />);
 		});
 
-		await pointerDown(buttonWithLabel("Open docs/a.mdx in editor"));
+		await pointerDown(buttonWithLabel("在编辑器中打开 docs/a.mdx"));
 
 		const labels = menuItems().map((item) => item.textContent);
-		expect(labels).toEqual(["System default"]);
+		expect(labels).toEqual(["系统默认"]);
 
 		await click(menuItems()[0] as Element);
 
@@ -212,7 +212,7 @@ describe("DiffView file actions", () => {
 			root.render(<DiffView fileDiffs={[FILE_DIFF]} onClose={vi.fn()} />);
 		});
 
-		await click(buttonWithLabel("Copy file path for docs/a.mdx"));
+		await click(buttonWithLabel("复制文件路径：docs/a.mdx"));
 
 		expect(writeText).toHaveBeenCalledWith("docs/a.mdx");
 	});
@@ -238,7 +238,7 @@ describe("DiffView hunk rendering", () => {
 		});
 
 		expect(diffContainers()).toHaveLength(0);
-		expect(container.textContent).toContain("No hunk details available.");
+		expect(container.textContent).toContain("暂无更改片段详情。");
 	});
 
 	it("removes the diff body when a file is collapsed and restores it on expand", async () => {

@@ -32,6 +32,7 @@ const {
 }));
 
 type MockSpeechInputProps = {
+	lang?: string;
 	disabled?: boolean;
 	onActiveChange?: (active: boolean) => void;
 	onClick?: (event: ReactMouseEvent<HTMLButtonElement>) => void;
@@ -231,6 +232,22 @@ async function renderVoiceComposer({
 }
 
 describe("ChatInputBar", () => {
+	it("passes the current preferred language to browser speech recognition", async () => {
+		loadProviderModelCatalogMock.mockResolvedValue(providerCatalog({
+			providerId: "openai", providerName: "OpenAI", modelId: "whisper-1",
+			modelName: "Whisper", supportsStreaming: false,
+		}));
+		try {
+			window.localStorage.setItem("cowse.preferredLanguage", "zh-TW");
+			await renderVoiceComposer();
+			expect(speechInputMockState.current?.lang).toBe("zh-TW");
+			window.localStorage.setItem("cowse.preferredLanguage", "default");
+			await renderVoiceComposer();
+			expect(speechInputMockState.current?.lang).toBe(navigator.language);
+		} finally {
+			window.localStorage.removeItem("cowse.preferredLanguage");
+		}
+	});
 	it("refreshes models on opening without Settings and rejects late stale loads", async () => {
 		const stale = deferred<Array<{ id: string; name: string }>>();
 		loadProviderModelsMock
@@ -408,7 +425,7 @@ describe("ChatInputBar", () => {
 			}),
 		).toEqual([
 			{ name: "release", description: "Ship it" },
-			{ name: "publish-ui-skill", description: "Skill command" },
+			{ name: "publish-ui-skill", description: "技能命令" },
 		]);
 	});
 
@@ -504,7 +521,7 @@ describe("ChatInputBar", () => {
 		});
 
 		const sendButton = container.querySelector<HTMLButtonElement>(
-			'[aria-label="Send message"]',
+			'[aria-label="发送消息"]',
 		);
 		expect(textarea?.readOnly).toBe(true);
 		expect(sendButton?.disabled).toBe(true);
@@ -996,7 +1013,7 @@ describe("ChatInputBar", () => {
 			).toContain("sr-only");
 		});
 		const compactModelTrigger = container.querySelector<HTMLButtonElement>(
-			'[aria-label="Model and provider"]',
+			'[aria-label="模型与供应商"]',
 		);
 		expect(compactModelTrigger?.disabled).toBe(false);
 		await act(async () => compactModelTrigger?.click());
@@ -1013,7 +1030,7 @@ describe("ChatInputBar", () => {
 		expect(container.textContent).toContain("Refreshed model");
 		await act(async () =>
 			container
-				.querySelector<HTMLButtonElement>('[aria-label="Close model selector"]')
+				.querySelector<HTMLButtonElement>('[aria-label="关闭模型选择器"]')
 				?.click(),
 		);
 		expect(compactModelTrigger?.getAttribute("aria-expanded")).toBe("false");
@@ -1044,7 +1061,10 @@ describe("ChatInputBar", () => {
 		await render("running");
 		expect(container.querySelector('[aria-label="停止任务"]')).not.toBeNull();
 
-		expect(onReasoningChange).toHaveBeenCalledWith({ thinking: true, reasoningEffort: undefined });
+		expect(onReasoningChange).toHaveBeenCalledWith({
+			thinking: true,
+			reasoningEffort: undefined,
+		});
 		const providerTrigger = container.querySelector<HTMLButtonElement>(
 			'[aria-label^="Provider:"]',
 		);
@@ -1056,10 +1076,10 @@ describe("ChatInputBar", () => {
 		const workspaceTrigger =
 			container.querySelector<HTMLButtonElement>("#git-branch-btn");
 		const attachTrigger = container.querySelector<HTMLButtonElement>(
-			'[aria-label="Attach files"]',
+			'[aria-label="添加附件"]',
 		);
 		const speechTrigger = container.querySelector<HTMLButtonElement>(
-			'[aria-label="Record speech"]',
+			'[aria-label="录制语音"]',
 		);
 		const thinkingTrigger = container.querySelector<HTMLButtonElement>(
 			'[aria-label="思考强度"]',
@@ -1089,7 +1109,7 @@ describe("ChatInputBar", () => {
 		const rightControls = container.querySelector('[aria-label="会话控制"]');
 		expect(rightControls?.contains(workspaceTrigger ?? null)).toBe(false);
 		const sendTrigger = container.querySelector<HTMLButtonElement>(
-			'[aria-label="Send message"]',
+			'[aria-label="发送消息"]',
 		);
 		const stopTrigger = container.querySelector<HTMLButtonElement>(
 			'[aria-label="停止任务"]',
@@ -1638,9 +1658,9 @@ describe("ChatInputBar", () => {
 
 		await act(async () => modelTrigger?.click());
 		const panel = document.querySelector('[role="dialog"]');
-		expect(panel?.textContent).toContain("Recommended");
-		expect(panel?.textContent).toContain("Free");
-		expect(panel?.textContent).toContain("All models");
+		expect(panel?.textContent).toContain("推荐");
+		expect(panel?.textContent).toContain("免费");
+		expect(panel?.textContent).toContain("全部模型");
 		expect(panel?.textContent).toContain("Most intelligent model");
 		expect(
 			panel?.querySelector(".cline-ui-search-combobox__badge")?.textContent,
@@ -1771,7 +1791,7 @@ describe("ChatInputBar", () => {
 			await act(async () => modelTrigger?.click());
 			const panel = document.querySelector('[role="dialog"]');
 			expect(panel?.textContent).not.toContain("Stale Legacy");
-			expect(panel?.textContent).not.toContain("Current model");
+			expect(panel?.textContent).not.toContain("当前模型");
 		});
 
 		it("keeps an explicitly active out-of-offer model visible and selectable", async () => {
@@ -1795,7 +1815,7 @@ describe("ChatInputBar", () => {
 			// selecting a value that does not exist in the list.
 			await act(async () => modelTrigger?.click());
 			const panel = document.querySelector('[role="dialog"]');
-			expect(panel?.textContent).toContain("Current model");
+			expect(panel?.textContent).toContain("当前模型");
 			const staleOption = [
 				...(panel?.querySelectorAll<HTMLButtonElement>('[role="option"]') ??
 					[]),

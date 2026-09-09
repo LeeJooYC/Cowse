@@ -118,7 +118,7 @@ describe("WelcomeWorkspaceControls manual path entry", () => {
 
 		await clickButton("打开文件夹\u201c/does/not/exist\u201d");
 
-		expect(container.textContent).toContain('Couldn\'t open "/does/not/exist"');
+		expect(container.textContent).toContain("无法打开“/does/not/exist”");
 	});
 
 	it("does not offer path entry for plain search text", async () => {
@@ -128,9 +128,7 @@ describe("WelcomeWorkspaceControls manual path entry", () => {
 
 		const pathOption = [
 			...container.querySelectorAll<HTMLButtonElement>("button"),
-		].find((candidate) =>
-			candidate.textContent?.includes("打开文件夹\u201c"),
-		);
+		].find((candidate) => candidate.textContent?.includes("打开文件夹\u201c"));
 		expect(pathOption).toBeUndefined();
 	});
 
@@ -165,7 +163,7 @@ describe("WelcomeWorkspaceControls manual path entry", () => {
 		await openWorkspaceMenu();
 		await typeInSearch("/does/not/exist");
 		await clickButton("打开文件夹\u201c/does/not/exist\u201d");
-		expect(container.textContent).toContain('Couldn\'t open "/does/not/exist"');
+		expect(container.textContent).toContain("无法打开“/does/not/exist”");
 
 		// Re-render with fresh callback identities, as the page does when the
 		// session history poll lands.
@@ -173,7 +171,7 @@ describe("WelcomeWorkspaceControls manual path entry", () => {
 
 		const input = container.querySelector<HTMLInputElement>("input");
 		expect(input?.value).toBe("/does/not/exist");
-		expect(container.textContent).toContain('Couldn\'t open "/does/not/exist"');
+		expect(container.textContent).toContain("无法打开“/does/not/exist”");
 	});
 
 	it("surfaces picker failures from Open folder instead of a silent no-op", async () => {

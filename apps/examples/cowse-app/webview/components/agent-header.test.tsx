@@ -166,7 +166,7 @@ describe("AgentHeader agent activity", () => {
 		);
 		expect(activity).not.toBeNull();
 		expect(activity?.getAttribute("aria-label")).toBe(
-			"5 agents: 1 running, 2 completed, 1 failed, 1 cancelled",
+			"5 个智能体：1 个运行中，2 个已完成，1 个失败，1 个已取消",
 		);
 		// total, running, completed, failed, stalled
 		expect(activity?.textContent).toBe("51211");
@@ -296,7 +296,7 @@ describe("AgentHeader agent roster popover", () => {
 	it("says a running agent is starting up when it has done nothing yet", async () => {
 		await renderHeader();
 		const panel = await openPanel();
-		expect(panel?.textContent).toContain("Starting up...");
+		expect(panel?.textContent).toContain("正在启动…");
 	});
 
 	it("notes a finished agent that recorded no activity", async () => {
@@ -314,13 +314,13 @@ describe("AgentHeader agent roster popover", () => {
 			],
 		});
 		const panel = await openPanel();
-		expect(panel?.textContent).toContain("No activity recorded (failed)");
+		expect(panel?.textContent).toContain("无活动记录（失败）");
 	});
 
 	it("labels a team-task agent with its team", async () => {
 		await renderHeader();
 		const panel = await openPanel();
-		expect(panel?.textContent).toContain("team platform");
+		expect(panel?.textContent).toContain("团队 platform");
 	});
 
 	it("spins the row of a running agent only", async () => {
@@ -387,7 +387,7 @@ describe("AgentHeader agent roster popover", () => {
 	it("shows a loading state while the roster is still being fetched", async () => {
 		await renderHeader({ agents: [], agentsLoading: true });
 		const panel = await openPanel();
-		expect(panel?.textContent).toContain("Loading agents...");
+		expect(panel?.textContent).toContain("正在加载智能体…");
 	});
 
 	it("says the list is stale when a refresh failed but agents remain", async () => {
@@ -396,7 +396,7 @@ describe("AgentHeader agent roster popover", () => {
 		// The rows are kept, so the failure has to be stated or they read as fresh.
 		expect(panel?.textContent).toContain("Review the diff for regressions");
 		const stale = panel?.querySelector("#agent-roster-stale");
-		expect(stale?.textContent).toContain("showing the last known agents");
+		expect(stale?.textContent).toContain("正在显示上次获取的智能体信息");
 		expect(stale?.textContent).toContain("database is locked");
 	});
 
@@ -409,7 +409,7 @@ describe("AgentHeader agent roster popover", () => {
 	it("explains an empty roster while agents are still starting up", async () => {
 		await renderHeader({ agents: [], agentsLoading: false });
 		const panel = await openPanel();
-		expect(panel?.textContent).toContain("Waiting for the first agent");
+		expect(panel?.textContent).toContain("正在等待第一个智能体");
 	});
 });
 
@@ -428,9 +428,7 @@ describe("AgentHeader subagent session badge", () => {
 	};
 
 	const newSessionButton = () =>
-		container.querySelector<HTMLButtonElement>(
-			'button[aria-label="New session"]',
-		);
+		container.querySelector<HTMLButtonElement>('button[aria-label="新会话"]');
 
 	it("stays hidden for an ordinary session, which keeps its new-session button", async () => {
 		expect(await renderHeader()).toBeNull();
@@ -464,7 +462,7 @@ describe("AgentHeader subagent session badge", () => {
 			parentSession: { sessionId: "root1", title: "Refactor the parser" },
 			onOpenParentSession: vi.fn(),
 		});
-		expect(badge?.textContent).toBe("Main Agent Session");
+		expect(badge?.textContent).toBe("主智能体会话");
 		expect(badge?.textContent).not.toContain("Subagent of");
 	});
 
@@ -474,10 +472,10 @@ describe("AgentHeader subagent session badge", () => {
 			onOpenParentSession: vi.fn(),
 		});
 		expect(badge?.getAttribute("title")).toBe(
-			"Back to the main agent session: Refactor the parser",
+			"返回主智能体会话：Refactor the parser",
 		);
 		expect(badge?.getAttribute("aria-label")).toBe(
-			"Back to the main agent session: Refactor the parser",
+			"返回主智能体会话：Refactor the parser",
 		);
 	});
 
@@ -486,8 +484,8 @@ describe("AgentHeader subagent session badge", () => {
 			parentSession: { sessionId: "root1" },
 			onOpenParentSession: vi.fn(),
 		});
-		expect(badge?.textContent).toBe("Main Agent Session");
-		expect(badge?.getAttribute("title")).toBe("Back to the main agent session");
+		expect(badge?.textContent).toBe("主智能体会话");
+		expect(badge?.getAttribute("title")).toBe("返回主智能体会话");
 	});
 
 	it("opens the parent session when clicked", async () => {

@@ -6,7 +6,7 @@ import { readModelRuntimeSettings } from "@/lib/model-runtime-settings";
 import { readAutoApprove } from "@/lib/auto-approve";
 
 export const CHAT_TRANSPORT_UNAVAILABLE_MESSAGE =
-	"Chat connection is unavailable. Reopen the app window to restore realtime chat.";
+	"会话连接不可用，请重新打开应用窗口以恢复实时会话。";
 export const CHAT_WS_ENDPOINT_RETRY_ATTEMPTS = 60;
 export const CHAT_WS_ENDPOINT_RETRY_DELAY_MS = 100;
 export const CHAT_WS_RECONNECT_BASE_DELAY_MS = 300;

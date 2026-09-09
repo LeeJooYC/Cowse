@@ -16,8 +16,8 @@ export function AgendaTaskReviewDialog({
 	task,
 	open,
 	pending,
-	confirmLabel = "Approve",
-	rejectLabel = "Reject",
+	confirmLabel = "批准",
+	rejectLabel = "拒绝",
 	onOpenChange,
 	onConfirm,
 	onReject,
@@ -39,76 +39,92 @@ export function AgendaTaskReviewDialog({
 						<DialogHeader>
 							<DialogTitle>{task.title}</DialogTitle>
 							<DialogDescription>
-								Review the exact revision before it can start a new agent
-								session.
+								请核对当前版本的任务内容，批准后才能启动新的智能体会话。
 							</DialogDescription>
 						</DialogHeader>
 						<div className="min-h-0 space-y-4 overflow-y-auto pr-1">
 							<div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-md border bg-muted/20 p-3 text-xs">
-								<ReviewField label="Revision" value={String(task.revision)} />
-								<ReviewField label="Priority" value={`P${task.priority}`} />
-								<ReviewField label="Type" value={task.type} />
-								<ReviewField label="Mode" value={task.mode ?? "act"} />
+								<ReviewField label="版本" value={String(task.revision)} />
+								<ReviewField label="优先级" value={`P${task.priority}`} />
 								<ReviewField
-									label="Scope"
+									label="类型"
 									value={
-										task.scope === "workspace"
-											? (task.workspaceRoot ?? "workspace")
-											: "General / chat workspace"
+										task.type === "follow-up"
+											? "后续跟进"
+											: task.type === "reminder"
+												? "提醒"
+												: task.type === "suggestion"
+													? "建议"
+													: task.type
 									}
 								/>
 								<ReviewField
-									label="Expires"
-									value={new Date(task.expiresAt).toLocaleString()}
+									label="模式"
+									value={
+										task.mode === "plan"
+											? "规划"
+											: task.mode === "act" || !task.mode
+												? "执行"
+												: task.mode
+									}
 								/>
 								<ReviewField
-									label="Available"
-									value={new Date(task.availableAt).toLocaleString()}
+									label="范围"
+									value={
+										task.scope === "workspace"
+											? (task.workspaceRoot ?? "工作区")
+											: "通用／聊天工作区"
+									}
 								/>
 								<ReviewField
-									label="Assignee"
-									value={task.assignee ?? "Default agent"}
+									label="到期时间"
+									value={new Date(task.expiresAt).toLocaleString("zh-CN")}
 								/>
 								<ReviewField
-									label="Model"
+									label="可执行时间"
+									value={new Date(task.availableAt).toLocaleString("zh-CN")}
+								/>
+								<ReviewField
+									label="执行者"
+									value={task.assignee ?? "默认智能体"}
+								/>
+								<ReviewField
+									label="模型"
 									value={
 										task.modelSelection
-											? `${task.modelSelection.providerId}/${task.modelSelection.modelId ?? "default"}`
-											: "Cline default"
+											? `${task.modelSelection.providerId}/${task.modelSelection.modelId ?? "默认"}`
+											: "Cline 默认模型"
 									}
 								/>
 								{task.cwd ? (
-									<ReviewField label="Working directory" value={task.cwd} />
+									<ReviewField label="工作目录" value={task.cwd} />
 								) : null}
 								<ReviewField
-									label="Run limits"
+									label="运行限制"
 									value={
 										[
 											task.maxIterations
-												? `${task.maxIterations} iterations`
+												? `最多 ${task.maxIterations} 轮`
 												: undefined,
 											task.timeoutSeconds
-												? `${task.timeoutSeconds}s timeout`
+												? `超时 ${task.timeoutSeconds} 秒`
 												: undefined,
 										]
 											.filter(Boolean)
-											.join(" · ") || "Hub defaults"
+											.join(" · ") || "后台默认设置"
 									}
 								/>
 							</div>
 							{task.description ? (
-								<ReviewText label="Description" value={task.description} />
+								<ReviewText label="描述" value={task.description} />
 							) : null}
-							<ReviewText label="Instructions" value={task.instructions} />
+							<ReviewText label="任务指令" value={task.instructions} />
 							{task.systemPrompt ? (
-								<ReviewText
-									label="System prompt override"
-									value={task.systemPrompt}
-								/>
+								<ReviewText label="覆盖系统提示词" value={task.systemPrompt} />
 							) : null}
 							{task.resourcePaths.length > 0 ? (
 								<div className="space-y-1.5">
-									<h4 className="text-xs font-medium">Files</h4>
+									<h4 className="text-xs font-medium">文件</h4>
 									<ul className="space-y-1 rounded-md border bg-muted/20 p-3 font-mono text-[11px]">
 										{task.resourcePaths.map((path) => (
 											<li className="break-all" key={path}>
@@ -129,7 +145,7 @@ export function AgendaTaskReviewDialog({
 								type="button"
 								variant={onReject ? "destructive" : "outline"}
 							>
-								{onReject ? rejectLabel : "Not now"}
+								{onReject ? rejectLabel : "暂不处理"}
 							</Button>
 							<Button
 								disabled={pending}

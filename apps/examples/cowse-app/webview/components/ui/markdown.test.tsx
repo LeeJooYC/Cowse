@@ -24,7 +24,7 @@ const ready = true;
 		expect(html).toContain('data-streamdown="table-wrapper"');
 		expect(html).toContain('data-streamdown="code-block"');
 		expect(html).toContain('data-streamdown="blocked-image"');
-		expect(html).toContain("External image blocked for privacy");
+		expect(html).toContain("为保护隐私，已阻止加载外部图片");
 		expect(html).not.toContain("<img");
 	});
 

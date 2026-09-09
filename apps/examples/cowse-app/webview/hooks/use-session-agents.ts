@@ -134,8 +134,7 @@ export function useSessionAgents({
 				if (requestSeqRef.current !== seq) {
 					return;
 				}
-				const message =
-					err instanceof Error ? err.message : "Could not load agents.";
+				const message = err instanceof Error ? err.message : "无法加载智能体。";
 				setRoster((prev) => ({
 					sessionId: targetSessionId,
 					// A failed read means this attempt learned nothing — not that the

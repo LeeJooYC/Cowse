@@ -99,11 +99,11 @@ function buttonWithText(text: string, rootNode: ParentNode = container) {
 async function switchToProjectSort(): Promise<void> {
 	// The sort control is a direct toggle: one click flips to project mode.
 	await click(
-		container.querySelector('[aria-label="Sort sessions: Time"]') as Element,
+		container.querySelector('[aria-label="会话排序：时间"]') as Element,
 	);
 	await vi.waitFor(() => {
 		expect(
-			container.querySelector('[aria-label="Sort sessions: Project"]'),
+			container.querySelector('[aria-label="会话排序：项目"]'),
 		).not.toBeNull();
 	});
 }
@@ -220,7 +220,7 @@ describe("AgentSidebar session organization", () => {
 		// The clock marks scheduled rows inline; a pinned scheduled session
 		// shows both indicators at once.
 		expect(
-			sessionRow("alpha session 1").querySelector('[aria-label="Scheduled"]'),
+			sessionRow("alpha session 1").querySelector('[aria-label="计划任务"]'),
 		).not.toBeNull();
 		// The clock leads the row: it renders before the title text.
 		// The innermost matching span is the title itself (the outer flex
@@ -234,7 +234,7 @@ describe("AgentSidebar session organization", () => {
 		expect(
 			(
 				sessionRow("alpha session 1").querySelector(
-					'[aria-label="Scheduled"]',
+					'[aria-label="计划任务"]',
 				) as Element
 			).compareDocumentPosition(scheduledTitle as Element) &
 				Node.DOCUMENT_POSITION_FOLLOWING,
@@ -243,13 +243,13 @@ describe("AgentSidebar session organization", () => {
 			sessionRow("alpha session 1").querySelector('[aria-label="已置顶"]'),
 		).toBeNull();
 		expect(
-			sessionRow("alpha session 2").querySelector('[aria-label="Scheduled"]'),
+			sessionRow("alpha session 2").querySelector('[aria-label="计划任务"]'),
 		).not.toBeNull();
 		expect(
 			sessionRow("alpha session 2").querySelector('[aria-label="已置顶"]'),
 		).not.toBeNull();
 		expect(
-			sessionRow("alpha session 3").querySelector('[aria-label="Scheduled"]'),
+			sessionRow("alpha session 3").querySelector('[aria-label="计划任务"]'),
 		).toBeNull();
 
 		// The default time view groups these rows under category sections.
@@ -309,9 +309,9 @@ describe("AgentSidebar session organization", () => {
 		const header = sessionRow("Daily date report");
 		expect(header.textContent).toContain("2 runs");
 		expect(header.getAttribute("aria-expanded")).toBe("false");
-		expect(header.querySelector('[aria-label="Scheduled"]')).not.toBeNull();
+		expect(header.querySelector('[aria-label="计划任务"]')).not.toBeNull();
 		expect(sessionIsVisible("Report today's date to the user.")).toBe(false);
-		expect(sessionIsVisible("Run 2")).toBe(false);
+		expect(sessionIsVisible("第 2 次运行")).toBe(false);
 		// The Scheduled section counts schedules, not runs.
 		expect(
 			buttonWithText(
@@ -325,22 +325,23 @@ describe("AgentSidebar session organization", () => {
 
 		await click(header);
 		expect(header.getAttribute("aria-expanded")).toBe("true");
-		expect(sessionIsVisible("Run 2")).toBe(true);
-		expect(sessionIsVisible("Run 1")).toBe(true);
+		expect(sessionIsVisible("第 2 次运行")).toBe(true);
+		expect(sessionIsVisible("第 1 次运行")).toBe(true);
 		// Nested runs don't repeat the clock the header already shows.
 		expect(
-			sessionRow("Run 1").querySelector('[aria-label="Scheduled"]'),
+			sessionRow("第 1 次运行").querySelector('[aria-label="计划任务"]'),
 		).toBeNull();
 		expect(
-			sessionRow("Run 2").compareDocumentPosition(sessionRow("Run 1")) &
-				Node.DOCUMENT_POSITION_FOLLOWING,
+			sessionRow("第 2 次运行").compareDocumentPosition(
+				sessionRow("第 1 次运行"),
+			) & Node.DOCUMENT_POSITION_FOLLOWING,
 		).toBeTruthy();
 
-		await click(sessionRow("Run 1"));
+		await click(sessionRow("第 1 次运行"));
 		expect(openThread).toHaveBeenCalledWith("alpha-1");
 
 		await click(header);
-		expect(sessionIsVisible("Run 1")).toBe(false);
+		expect(sessionIsVisible("第 1 次运行")).toBe(false);
 	});
 
 	it("expands the schedule group that holds the active session", async () => {
@@ -374,13 +375,13 @@ describe("AgentSidebar session organization", () => {
 		expect(sessionRow("Daily date report").getAttribute("aria-expanded")).toBe(
 			"true",
 		);
-		expect(sessionIsVisible("Run 1")).toBe(true);
+		expect(sessionIsVisible("第 1 次运行")).toBe(true);
 
 		// The group can still be collapsed while it holds the active session,
 		// and stays collapsed across re-renders.
 		await click(sessionRow("Daily date report"));
 		await render("alpha-1");
-		expect(sessionIsVisible("Run 1")).toBe(false);
+		expect(sessionIsVisible("第 1 次运行")).toBe(false);
 
 		// Opening another run of the schedule (e.g. from the Schedules
 		// settings page) reopens the collapsed group so the run is visible.
@@ -388,7 +389,7 @@ describe("AgentSidebar session organization", () => {
 		expect(sessionRow("Daily date report").getAttribute("aria-expanded")).toBe(
 			"true",
 		);
-		expect(sessionIsVisible("Run 2")).toBe(true);
+		expect(sessionIsVisible("第 2 次运行")).toBe(true);
 	});
 
 	it("groups scheduled runs inside their project when sorted by project", async () => {
@@ -423,9 +424,9 @@ describe("AgentSidebar session organization", () => {
 		const header = sessionRow("Daily date report");
 		expect(header.textContent).toContain("2 runs");
 		expect(sessionIsVisible("alpha session 3")).toBe(true);
-		expect(sessionIsVisible("Run 2")).toBe(false);
+		expect(sessionIsVisible("第 2 次运行")).toBe(false);
 		await click(header);
-		expect(sessionIsVisible("Run 2")).toBe(true);
+		expect(sessionIsVisible("第 2 次运行")).toBe(true);
 	});
 
 	it("defaults to Pinned, Scheduled, and Tasks sections sorted by time", async () => {
@@ -561,7 +562,7 @@ describe("AgentSidebar session organization", () => {
 					Node.DOCUMENT_POSITION_FOLLOWING,
 			).toBeTruthy();
 		}
-		expect(container.textContent).not.toContain("Pinned");
+		expect(container.textContent).not.toContain("已置顶");
 	});
 
 	it("loads older history only on explicit Show more clicks", async () => {
@@ -592,7 +593,7 @@ describe("AgentSidebar session organization", () => {
 		};
 
 		await renderSidebar(false);
-		await click(buttonWithText("Show more"));
+		await click(buttonWithText("显示更多"));
 		expect(loadOlderSessions).toHaveBeenCalledOnce();
 
 		// A settled fetch never triggers an automatic follow-up request; only
@@ -601,7 +602,7 @@ describe("AgentSidebar session organization", () => {
 		await renderSidebar(false);
 		expect(loadOlderSessions).toHaveBeenCalledOnce();
 
-		await click(buttonWithText("Show more"));
+		await click(buttonWithText("显示更多"));
 		expect(loadOlderSessions).toHaveBeenCalledTimes(2);
 	});
 
@@ -626,7 +627,7 @@ describe("AgentSidebar session organization", () => {
 		});
 
 		expect(sessionIsVisible("plain session 1")).toBe(true);
-		expect(container.textContent).not.toContain("Pinned");
+		expect(container.textContent).not.toContain("已置顶");
 		expect(container.textContent).not.toContain("Scheduled");
 		expect(container.textContent).not.toContain("Tasks");
 	});
@@ -833,7 +834,7 @@ describe("AgentSidebar session organization", () => {
 		// The default view is a flat time-sorted list showing the first page
 		// of 30 rows.
 		expect(
-			container.querySelector('[aria-label="Sort sessions: Time"]'),
+			container.querySelector('[aria-label="会话排序：时间"]'),
 		).not.toBeNull();
 		expect(sessionIsVisible("alpha session 30")).toBe(true);
 		expect(sessionIsVisible("alpha session 31")).toBe(false);
@@ -841,7 +842,7 @@ describe("AgentSidebar session organization", () => {
 
 		// The first page grows purely from already-loaded sessions (70 loaded,
 		// 60 requested), so no history fetch is needed.
-		await click(buttonWithText("Show more"));
+		await click(buttonWithText("显示更多"));
 		expect(sessionIsVisible("alpha session 31")).toBe(true);
 		expect(loadMoreSessions).not.toHaveBeenCalled();
 		expect(loadOlderSessions).not.toHaveBeenCalled();
@@ -1207,10 +1208,8 @@ describe("AgentSidebar session organization", () => {
 		expect(titleBar).not.toBeNull();
 		expect(titleBar?.textContent).not.toContain("Cline");
 
-		await click(
-			container.querySelector('[aria-label="Previous page"]') as Element,
-		);
-		await click(container.querySelector('[aria-label="Next page"]') as Element);
+		await click(container.querySelector('[aria-label="上一页"]') as Element);
+		await click(container.querySelector('[aria-label="下一页"]') as Element);
 		expect(onNavigateBack).toHaveBeenCalledOnce();
 		expect(onNavigateForward).toHaveBeenCalledOnce();
 	});
@@ -1298,7 +1297,7 @@ describe("AgentSidebar session organization", () => {
 		expect(container.querySelector('[aria-label="牛马主页"]')).not.toBeNull();
 		expect(container.querySelector('[aria-label="通用"]')).toBeNull();
 		const gear = container.querySelector('[aria-label="设置"]')!;
-			expect(gear.className.split(" ")).not.toContain("bg-surface-hover");
+		expect(gear.className.split(" ")).not.toContain("bg-surface-hover");
 		if (expanded) {
 			expect(buttonWithText("计划任务").getAttribute("aria-current")).toBe(
 				"page",

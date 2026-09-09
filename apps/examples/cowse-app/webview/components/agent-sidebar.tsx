@@ -360,9 +360,7 @@ export function AgentSidebar({
 	const { displayName, email } = user || {};
 	const username = displayName?.split(" ")?.[0] || email?.split("@")?.[0];
 	const accountName = username?.trim() || "牛马";
-	const accountScope = user
-		? (activeOrganization?.name ?? "Personal")
-		: undefined;
+	const accountScope = user ? (activeOrganization?.name ?? "个人") : undefined;
 	const accountInitial = accountName.charAt(0).toUpperCase();
 	// Schedules reuse the settings content container, but belong to the app
 	// navigation: keep search, new chat and session history available there.
@@ -740,7 +738,7 @@ export function AgentSidebar({
 	// that is currently active.
 	const sortToggle = (
 		<Button
-			aria-label={`Sort sessions: ${sortMode === "time" ? "Time" : "Project"}`}
+			aria-label={`会话排序：${sortMode === "time" ? "时间" : "项目"}`}
 			className="m-0! inline-flex size-8 items-center justify-center rounded-md p-0! text-muted-foreground hover:bg-surface-hover hover:text-sidebar-foreground"
 			onClick={() =>
 				setSortMode((current) => (current === "time" ? "project" : "time"))
@@ -748,8 +746,8 @@ export function AgentSidebar({
 			size="icon"
 			title={
 				sortMode === "time"
-					? "Sorted by time — click to group by project"
-					: "Grouped by project — click to sort by time"
+					? "已按时间排序，点击按项目分组"
+					: "已按项目分组，点击按时间排序"
 			}
 			variant="ghost"
 		>
@@ -830,11 +828,11 @@ export function AgentSidebar({
 			{isLoadingMore ? (
 				<>
 					<Loader2 className="size-3 animate-spin" />
-					Loading...
+					正在加载…
 				</>
 			) : (
 				<>
-					Show more
+					显示更多
 					<ChevronDown className="size-3" />
 				</>
 			)}
@@ -853,24 +851,24 @@ export function AgentSidebar({
 					{!isCollapsed ? (
 						<>
 							<Button
-								aria-label="Previous page"
+								aria-label="上一页"
 								className="size-8 text-muted-foreground hover:bg-surface-hover hover:text-sidebar-foreground"
 								disabled={!canNavigateBack}
 								onClick={navigateBack}
 								size="icon"
-								title="Previous page"
+								title="上一页"
 								type="button"
 								variant="ghost"
 							>
 								<ArrowLeft className="size-4.5" />
 							</Button>
 							<Button
-								aria-label="Next page"
+								aria-label="下一页"
 								className="size-8 text-muted-foreground hover:bg-surface-hover hover:text-sidebar-foreground"
 								disabled={!canNavigateForward}
 								onClick={navigateForward}
 								size="icon"
-								title="Next page"
+								title="下一页"
 								type="button"
 								variant="ghost"
 							>
@@ -1479,7 +1477,7 @@ function ScheduleGroupRow({
 						)}
 					/>
 					<Clock3
-						aria-label="Scheduled"
+						aria-label="计划任务"
 						className="size-3 shrink-0 text-muted-foreground"
 					/>
 					<span className="block min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm font-normal leading-tight">
@@ -1615,7 +1613,7 @@ function ThreadItem({
 								<span className="flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden">
 									{thread.isScheduled && !nested ? (
 										<Clock3
-											aria-label="Scheduled"
+											aria-label="计划任务"
 											className="size-3 shrink-0 text-muted-foreground"
 										/>
 									) : null}

@@ -93,8 +93,8 @@ describe("GitHubConnectStep", () => {
 	it("shows the connect card when GitHub is not connected", async () => {
 		mockIntegrationsCommand({ list: () => [] });
 		const onContinue = await render();
-		expect(container.textContent).toContain("Connect GitHub");
-		expect(container.textContent).toContain("Not connected");
+		expect(container.textContent).toContain("连接 GitHub");
+		expect(container.textContent).toContain("未连接");
 		expect(onContinue).not.toHaveBeenCalled();
 	});
 
@@ -102,7 +102,7 @@ describe("GitHubConnectStep", () => {
 		mockIntegrationsCommand({ list: () => [] });
 		const onContinue = await render();
 		await act(async () => {
-			buttonByText("Skip for now").click();
+			buttonByText("暂时跳过").click();
 		});
 		expect(onContinue).toHaveBeenCalledTimes(1);
 	});
@@ -123,33 +123,33 @@ describe("GitHubConnectStep", () => {
 		vi.useFakeTimers();
 
 		await act(async () => {
-			buttonByText("Connect GitHub").click();
+			buttonByText("连接 GitHub").click();
 		});
 		expect(openExternalUrl).toHaveBeenCalledWith(
 			"https://github.com/apps/cline/installations/new?state=abc",
 		);
 		expect(container.textContent).toContain(
-			"Finish installing the Cline GitHub App in your browser",
+			"请在浏览器中完成 Cline GitHub App 的安装",
 		);
 
 		// First poll: still not installed.
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(GITHUB_INSTALL_POLL_INTERVAL_MS);
 		});
-		expect(container.textContent).not.toContain("Connected");
+		expect(container.textContent).not.toContain("已连接");
 
 		connected = true;
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(GITHUB_INSTALL_POLL_INTERVAL_MS);
 		});
-		expect(container.textContent).toContain("Connected");
-		expect(container.textContent).toContain("Accessible repositories");
+		expect(container.textContent).toContain("已连接");
+		expect(container.textContent).toContain("可访问的仓库");
 		expect(container.textContent).toContain("cline/cline");
 		expect(container.textContent).toContain("cline/core-platform");
 
 		expect(onContinue).not.toHaveBeenCalled();
 		await act(async () => {
-			buttonByText("Continue").click();
+			buttonByText("继续").click();
 		});
 		expect(onContinue).toHaveBeenCalledTimes(1);
 	});
@@ -164,14 +164,12 @@ describe("GitHubConnectStep", () => {
 		await render();
 
 		await act(async () => {
-			buttonByText("Connect GitHub").click();
+			buttonByText("连接 GitHub").click();
 		});
-		expect(container.textContent).toContain(
-			"Failed to start the GitHub connection",
-		);
+		expect(container.textContent).toContain("无法开始连接 GitHub");
 		expect(container.textContent).toContain("authentication required");
 		expect(openExternalUrl).not.toHaveBeenCalled();
-		expect(buttonByText("Connect GitHub")).toBeDefined();
+		expect(buttonByText("连接 GitHub")).toBeDefined();
 	});
 
 	it("stops waiting when the browser round-trip is cancelled", async () => {
@@ -182,15 +180,15 @@ describe("GitHubConnectStep", () => {
 		await render();
 
 		await act(async () => {
-			buttonByText("Connect GitHub").click();
+			buttonByText("连接 GitHub").click();
 		});
-		expect(container.textContent).toContain("Finish installing");
+		expect(container.textContent).toContain("请在浏览器中完成");
 
 		await act(async () => {
-			buttonByText("Cancel").click();
+			buttonByText("取消").click();
 		});
-		expect(container.textContent).not.toContain("Finish installing");
-		expect(buttonByText("Connect GitHub")).toBeDefined();
+		expect(container.textContent).not.toContain("请在浏览器中完成");
+		expect(buttonByText("连接 GitHub")).toBeDefined();
 	});
 
 	it("stops polling once cancelled instead of leaving the interval running", async () => {
@@ -202,14 +200,14 @@ describe("GitHubConnectStep", () => {
 		vi.useFakeTimers();
 
 		await act(async () => {
-			buttonByText("Connect GitHub").click();
+			buttonByText("连接 GitHub").click();
 		});
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(GITHUB_INSTALL_POLL_INTERVAL_MS);
 		});
 
 		await act(async () => {
-			buttonByText("Cancel").click();
+			buttonByText("取消").click();
 		});
 		const callsAfterCancel = invoke.mock.calls.length;
 
@@ -231,9 +229,9 @@ describe("GitHubConnectStep", () => {
 		vi.useFakeTimers();
 
 		await act(async () => {
-			buttonByText("Connect GitHub").click();
+			buttonByText("连接 GitHub").click();
 		});
-		expect(container.textContent).toContain("Finish installing");
+		expect(container.textContent).toContain("请在浏览器中完成");
 
 		signedOut = true;
 		await act(async () => {
@@ -241,9 +239,9 @@ describe("GitHubConnectStep", () => {
 		});
 
 		// Back to the actionable connect state, not a permanent spinner.
-		expect(container.textContent).not.toContain("Finish installing");
-		expect(container.textContent).toContain("Your Cline account session ended");
-		expect(buttonByText("Connect GitHub")).toBeDefined();
+		expect(container.textContent).not.toContain("请在浏览器中完成");
+		expect(container.textContent).toContain("Cline 账户会话已结束");
+		expect(buttonByText("连接 GitHub")).toBeDefined();
 
 		const callsAfterSignOut = invoke.mock.calls.length;
 		await act(async () => {

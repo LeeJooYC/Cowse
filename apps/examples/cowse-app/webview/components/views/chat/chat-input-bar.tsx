@@ -44,6 +44,10 @@ import {
 	writeModelSelectionStorageToWindow,
 } from "@/lib/model-selection";
 import { subscribeToPromptInputFocus } from "@/lib/prompt-input-focus";
+import {
+	readPreferredLanguage,
+	resolveSpeechRecognitionLanguage,
+} from "@/lib/preferred-language";
 import { normalizeProviderId } from "@/lib/provider-id";
 import {
 	loadProviderModelCatalog,
@@ -101,9 +105,9 @@ type UserInstructionConfigResponse = {
 const BUILTIN_SLASH_COMMANDS: SlashCommand[] = [
 	{
 		name: "fork",
-		description: "Create a copy of the current session into a new session",
+		description: "将当前会话复制为新会话",
 	},
-	{ name: "team", description: "Start the task with an agent team" },
+	{ name: "team", description: "使用智能体团队开始任务" },
 ];
 
 // Last known user commands, kept across composer instances so reopening the
@@ -129,7 +133,7 @@ export function buildUserInstructionSlashCommands(
 				name,
 				description:
 					command.description?.trim() ||
-					`${command.kind === "skill" ? "Skill" : "Workflow"} command`,
+					`${command.kind === "skill" ? "技能" : "工作流"}命令`,
 			},
 		];
 	});
@@ -743,12 +747,10 @@ function ChatInputBarImpl({
 	const handleAudioRecorded = useCallback(
 		async (audioBlob: Blob): Promise<string> => {
 			if (!transcriptionTarget) {
-				throw new Error(
-					"Configure an audio-to-text provider before using speech input",
-				);
+				throw new Error("使用语音输入前，请先配置语音转文字供应商");
 			}
 			if (audioBlob.size > MAX_RECORDED_AUDIO_BYTES) {
-				throw new Error("Recorded audio exceeds the 25 MiB upload limit");
+				throw new Error("录音超过 25 MiB 上传限制");
 			}
 			writeDesktopDebugLog({
 				scope: "voice-input",
@@ -772,7 +774,7 @@ function ChatInputBarImpl({
 			);
 			const text = result.text?.trim();
 			if (!text) {
-				throw new Error("The transcription provider returned no text");
+				throw new Error("语音转文字服务未返回文本");
 			}
 			return text;
 		},
@@ -789,7 +791,7 @@ function ChatInputBarImpl({
 			const message =
 				error instanceof Error
 					? error.message
-					: "Check microphone permission and audio provider settings.";
+					: "请检查麦克风权限和语音供应商设置。";
 			writeDesktopDebugLog({
 				scope: "voice-input",
 				level: "error",
@@ -803,9 +805,9 @@ function ChatInputBarImpl({
 			}
 			toast({
 				variant: "destructive",
-				title: "Speech input failed",
+				title: "语音输入失败",
 				description: isMicrophoneError
-					? "Check the microphone permission for Cline and try again."
+					? "请检查牛马的麦克风权限后重试。"
 					: message,
 			});
 		},
@@ -829,18 +831,36 @@ function ChatInputBarImpl({
 	const previousEffort = EFFORT_LEVELS[effortIndex]?.value ?? "on";
 	const selectedEffort = availableEfforts.includes(previousEffort)
 		? previousEffort
-		: availableEfforts.includes("medium") ? "medium" : availableEfforts[0];
+		: availableEfforts.includes("medium")
+			? "medium"
+			: availableEfforts[0];
 	const effortLabel = REASONING_LABELS[selectedEffort];
 	useEffect(() => {
 		if (isBusy) return;
-		if (reasoningCapability?.provider !== provider || reasoningCapability.model !== model) return;
+		if (
+			reasoningCapability?.provider !== provider ||
+			reasoningCapability.model !== model
+		)
+			return;
 		const option = EFFORT_LEVELS.find((item) => item.value === selectedEffort);
 		if (!option) return;
 		const next = buildReasoningConfig(option);
-		if (thinking !== next.thinking || reasoningEffort !== next.reasoningEffort) {
+		if (
+			thinking !== next.thinking ||
+			reasoningEffort !== next.reasoningEffort
+		) {
 			onReasoningChange(next);
 		}
-	}, [selectedEffort, thinking, reasoningEffort, isBusy, onReasoningChange, reasoningCapability, provider, model]);
+	}, [
+		selectedEffort,
+		thinking,
+		reasoningEffort,
+		isBusy,
+		onReasoningChange,
+		reasoningCapability,
+		provider,
+		model,
+	]);
 	const promptInputRows =
 		variant === "welcome" || promptInputFocused
 			? PROMPT_INPUT_EXPANDED_ROWS
@@ -1099,9 +1119,7 @@ function ChatInputBarImpl({
 						>
 							{filteredSlashCommands.length === 0 ? (
 								<div className="px-3 py-2 text-sm text-muted-foreground">
-									{slashLoading
-										? "Loading commands..."
-										: "No matching commands"}
+									{slashLoading ? "正在加载命令…" : "没有匹配的命令"}
 								</div>
 							) : (
 								<>
@@ -1130,7 +1148,7 @@ function ChatInputBarImpl({
 									))}
 									{slashLoading && (
 										<div className="px-3 py-1 text-[10px] text-muted-foreground">
-											Loading...
+											正在加载…
 										</div>
 									)}
 								</>
@@ -1145,7 +1163,7 @@ function ChatInputBarImpl({
 						>
 							{mentionFiles.length === 0 ? (
 								<div className="px-3 py-2 text-sm text-muted-foreground">
-									{mentionLoading ? "Searching files..." : "No matching files"}
+									{mentionLoading ? "正在搜索文件…" : "没有匹配的文件"}
 								</div>
 							) : (
 								<>
@@ -1169,7 +1187,7 @@ function ChatInputBarImpl({
 									))}
 									{mentionLoading && (
 										<div className="px-3 py-1 text-[10px] text-muted-foreground">
-											Updating...
+											正在更新…
 										</div>
 									)}
 								</>
@@ -1202,7 +1220,7 @@ function ChatInputBarImpl({
 								className="flex shrink-0 items-center gap-1.5 self-center text-xs text-muted-foreground"
 							>
 								<Spinner className="size-3.5" />
-								<span className="sr-only">Transcribing voice input</span>
+								<span className="sr-only">正在将语音转换为文字</span>
 							</output>
 						)}
 						<textarea
@@ -1376,6 +1394,9 @@ function ChatInputBarImpl({
 							    don't get a dead control. */}
 							{transcriptionTarget ? (
 								<SpeechInput
+									lang={resolveSpeechRecognitionLanguage(
+										readPreferredLanguage(),
+									)}
 									key={`${transcriptionTarget.providerId}:${transcriptionTarget.modelId}:${transcriptionTarget.supportsStreaming ? "streaming" : "auto"}`}
 									onActiveChange={handleSpeechInputActiveChange}
 									onAudioRecorded={handleAudioRecorded}
@@ -1396,12 +1417,12 @@ function ChatInputBarImpl({
 									recordingMode={
 										transcriptionTarget.supportsStreaming ? "streaming" : "auto"
 									}
-									title={`${transcriptionTarget.supportsStreaming ? "Transcribe live" : "Transcribe"} with ${transcriptionTarget.providerName} / ${transcriptionTarget.modelName}`}
+									title={`${transcriptionTarget.supportsStreaming ? "实时语音转文字" : "语音转文字"}：${transcriptionTarget.providerName} / ${transcriptionTarget.modelName}`}
 								/>
 							) : null}
 							{(!isBusy || canSend) && (
 								<button
-									aria-label="Send message"
+									aria-label="发送消息"
 									className={cn(
 										"p-1.5 disabled:cursor-not-allowed disabled:opacity-50",
 										variant === "welcome"
@@ -1410,7 +1431,7 @@ function ChatInputBarImpl({
 									)}
 									disabled={!canSend}
 									onClick={handleSend}
-									title="Send (Enter)"
+									title="发送（回车）"
 									type="button"
 								>
 									<ArrowUp className="size-3" />
@@ -1428,7 +1449,7 @@ function ChatInputBarImpl({
 							>
 								{attachment.isImage ? "image:" : "file:"} {attachment.name}
 								<button
-									aria-label={`Remove ${attachment.name}`}
+									aria-label={`移除 ${attachment.name}`}
 									className="rounded-sm p-0.5 text-muted-foreground hover:bg-surface-hover hover:text-foreground"
 									onClick={() => onRemoveAttachment(attachment.id)}
 									type="button"
@@ -1445,7 +1466,7 @@ function ChatInputBarImpl({
 			<div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-b-xl border-t border-border bg-muted/20 px-2 py-2 text-sm text-muted-foreground">
 				<div className="flex min-w-0 flex-auto flex-wrap items-center gap-2 max-[560px]:flex-nowrap">
 					<button
-						aria-label="Attach files"
+						aria-label="添加附件"
 						className="rounded-md p-2 text-muted-foreground hover:bg-surface-hover"
 						onClick={() => fileInputRef.current?.click()}
 						type="button"
@@ -1714,7 +1735,7 @@ const ModelSelector = memo(function ModelSelector({
 				? {
 						sections: [
 							...(modelPicker.sections ?? []),
-							{ id: "current", label: "Current model" },
+							{ id: "current", label: "当前模型" },
 						],
 					}
 				: {}),
@@ -2022,10 +2043,10 @@ const ModelSelector = memo(function ModelSelector({
 			ariaLabel="Provider"
 			className={triggerClassName}
 			disabled={isBusy || providers.length === 0}
-			emptyText="No providers found."
+			emptyText="未找到可用供应商。"
 			onValueChange={handleProviderSelect}
 			options={providerOptions}
-			placeholder="Provider"
+			placeholder="供应商"
 			placement="top"
 			searchPlaceholder="搜索供应商"
 			value={resolvedProvider}
@@ -2051,7 +2072,7 @@ const ModelSelector = memo(function ModelSelector({
 			}}
 			options={visibleModelPicker.options}
 			panelWidth="20rem"
-			placeholder="Model"
+			placeholder="模型"
 			placement="top"
 			searchPlaceholder="搜索模型"
 			sections={visibleModelPicker.sections}
@@ -2064,11 +2085,11 @@ const ModelSelector = memo(function ModelSelector({
 			<button
 				aria-expanded={mobileOpen}
 				aria-haspopup="dialog"
-				aria-label="Model and provider"
+				aria-label="模型与供应商"
 				className="hidden size-7 items-center justify-center rounded-md text-foreground hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 max-[560px]:inline-flex"
 				disabled={isBusy || providers.length === 0}
 				onClick={() => setMobileOpen((current) => !current)}
-				title={`${providerNames[resolvedProvider]?.trim() || resolvedProvider || "Provider"} / ${selectedModelLabel || "Model"}`}
+				title={`${providerNames[resolvedProvider]?.trim() || resolvedProvider || "供应商"} / ${selectedModelLabel || "模型"}`}
 				type="button"
 			>
 				<Cpu className="size-3.5" />
@@ -2077,7 +2098,7 @@ const ModelSelector = memo(function ModelSelector({
 			{mobileOpen ? (
 				<>
 					<button
-						aria-label="Close model selector"
+						aria-label="关闭模型选择器"
 						className="fixed inset-0 z-40 hidden cursor-default opacity-0 max-[560px]:block"
 						onClick={() => setMobileOpen(false)}
 						type="button"
@@ -2085,7 +2106,7 @@ const ModelSelector = memo(function ModelSelector({
 					<div className="absolute bottom-full left-0 z-50 mb-2 hidden w-64 max-w-[calc(100vw-2rem)] space-y-3 rounded-lg border border-border bg-popover p-3 shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-1 motion-reduce:animate-none max-[560px]:block">
 						<div className="space-y-1">
 							<div className="text-xs font-medium text-muted-foreground">
-								Provider
+								供应商
 							</div>
 							{renderProviderSelect(
 								"w-full max-w-none justify-between text-sm",
@@ -2093,7 +2114,7 @@ const ModelSelector = memo(function ModelSelector({
 						</div>
 						<div className="space-y-1">
 							<div className="text-xs font-medium text-muted-foreground">
-								Model
+								模型
 							</div>
 							{renderModelSelect(
 								"w-full max-w-none justify-between text-sm",

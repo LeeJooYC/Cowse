@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	formatCompactTokens,
 	paginationItems,
+	sessionFilterLabel,
 	SessionsView,
 } from "@/components/views/sessions/sessions-view";
 import type { SessionThread } from "@/hooks/use-session-history";
@@ -125,12 +126,12 @@ describe("SessionsView table", () => {
 			.slice(0, 6)
 			.map((node) => node.textContent);
 		expect(headers).toEqual([
-			"Title",
-			"Workspace",
-			"Model",
-			"Tokens",
-			"Cost",
-			"Time",
+			"标题",
+			"工作区",
+			"模型",
+			"Token 数",
+			"费用",
+			"时间",
 		]);
 	});
 
@@ -155,7 +156,7 @@ describe("SessionsView table", () => {
 	it("marks pinned sessions with a pin icon", async () => {
 		const plain = renderView();
 		await plain.render();
-		expect(container.querySelector('[aria-label="Pinned"]')).toBeNull();
+		expect(container.querySelector('[aria-label="已置顶"]')).toBeNull();
 
 		await act(async () => root.unmount());
 		root = createRoot(container);
@@ -164,7 +165,7 @@ describe("SessionsView table", () => {
 			threads: [{ ...thread, pinned: true }],
 		});
 		await pinned.render();
-		expect(container.querySelector('[aria-label="Pinned"]')).not.toBeNull();
+		expect(container.querySelector('[aria-label="已置顶"]')).not.toBeNull();
 	});
 
 	it("opens a session on click but not while text is selected", async () => {
@@ -194,16 +195,16 @@ describe("SessionsView table", () => {
 	it("keeps loading until the first response and only then shows the empty state", async () => {
 		const loading = renderView({ threads: [], hasLoadedHistory: false });
 		await loading.render();
-		expect(container.textContent).toContain("Loading session history...");
-		expect(container.textContent).not.toContain("No sessions yet.");
+		expect(container.textContent).toContain("正在加载会话记录…");
+		expect(container.textContent).not.toContain("暂无会话。");
 
 		await act(async () => root.unmount());
 		root = createRoot(container);
 
 		const empty = renderView({ threads: [], hasLoadedHistory: true });
 		await empty.render();
-		expect(container.textContent).toContain("No sessions yet.");
-		expect(container.textContent).not.toContain("Loading session history...");
+		expect(container.textContent).toContain("暂无会话。");
+		expect(container.textContent).not.toContain("正在加载会话记录…");
 	});
 
 	it("loads complete history before treating search results as exhaustive", async () => {
@@ -211,7 +212,7 @@ describe("SessionsView table", () => {
 		await view.render();
 
 		const search = container.querySelector<HTMLInputElement>(
-			'input[aria-label="Search sessions"]',
+			'input[aria-label="搜索会话"]',
 		);
 		expect(search).not.toBeNull();
 		await act(async () => {
@@ -233,7 +234,7 @@ describe("SessionsView table", () => {
 		await view.render();
 
 		const filterButton = container.querySelector<HTMLButtonElement>(
-			'button[aria-label="Filter sessions"]',
+			'button[aria-label="筛选会话"]',
 		);
 		await act(async () => {
 			filterButton?.dispatchEvent(
@@ -248,7 +249,7 @@ describe("SessionsView table", () => {
 
 		view.loadAllSessions.mockClear();
 		const sortButton = container.querySelector<HTMLButtonElement>(
-			'button[aria-label="Sort sessions"]',
+			'button[aria-label="会话排序"]',
 		);
 		await act(async () => {
 			sortButton?.dispatchEvent(
@@ -261,7 +262,7 @@ describe("SessionsView table", () => {
 		});
 		const oldestItem = Array.from(
 			document.body.querySelectorAll<HTMLElement>('[role="menuitem"]'),
-		).find((item) => item.textContent === "Oldest first");
+		).find((item) => item.textContent === "最早优先");
 		expect(oldestItem).not.toBeUndefined();
 		await act(async () => {
 			oldestItem?.click();
@@ -293,7 +294,7 @@ describe("SessionsView pagination", () => {
 		});
 	};
 
-	const clickNext = () => clickButton("Next page");
+	const clickNext = () => clickButton("下一页");
 
 	it("shows ten sessions per page", async () => {
 		const view = renderView({ threads: manyThreads });
@@ -301,11 +302,11 @@ describe("SessionsView pagination", () => {
 
 		expect(rowTitles()).toHaveLength(10);
 		expect(rowTitles()[0]).toBe("Session 0");
-		expect(container.textContent).toContain("1-10 of 25");
+		expect(container.textContent).toContain("第 1–10 条，共 25 条");
 
 		await clickNext();
 		expect(rowTitles()[0]).toBe("Session 10");
-		expect(container.textContent).toContain("11-20 of 25");
+		expect(container.textContent).toContain("第 11–20 条，共 25 条");
 	});
 
 	it("only asks the backend for older sessions at the last page", async () => {
@@ -334,7 +335,7 @@ describe("SessionsView pagination", () => {
 		await clickNext();
 		await clickNext();
 
-		expect(container.textContent).toContain("21-25 of 25");
+		expect(container.textContent).toContain("第 21–25 条，共 25 条");
 		expect(rowTitles()).toHaveLength(5);
 	});
 
@@ -343,25 +344,24 @@ describe("SessionsView pagination", () => {
 		await view.render();
 
 		const pageButtons = Array.from(
-			container.querySelectorAll('button[aria-label^="Page "]'),
+			container.querySelectorAll('button[aria-label^="第 "]'),
 		).map((button) => button.textContent);
 		expect(pageButtons).toEqual(["1", "2", "3"]);
 		expect(container.textContent).not.toContain("Page 1 of");
 
-		await clickButton("Page 3");
+		await clickButton("第 3 页");
 		expect(rowTitles()[0]).toBe("Session 20");
 		expect(
 			container
-				.querySelector('button[aria-label="Page 3"]')
+				.querySelector('button[aria-label="第 3 页"]')
 				?.getAttribute("aria-current"),
 		).toBe("page");
 
-		await clickButton("First page");
+		await clickButton("首页");
 		expect(rowTitles()[0]).toBe("Session 0");
 		expect(
-			container.querySelector<HTMLButtonElement>(
-				'button[aria-label="First page"]',
-			)?.disabled,
+			container.querySelector<HTMLButtonElement>('button[aria-label="首页"]')
+				?.disabled,
 		).toBe(true);
 	});
 });
@@ -384,5 +384,16 @@ describe("paginationItems", () => {
 			12,
 		]);
 		expect(paginationItems(12, 12)).toEqual([1, "gap-start", 8, 9, 10, 11, 12]);
+	});
+});
+
+describe("sessionFilterLabel", () => {
+	it("translates filter labels and preserves model IDs, paths, and unknown values", () => {
+		expect(sessionFilterLabel("pinned:yes")).toBe("已置顶");
+		expect(sessionFilterLabel("status:running")).toBe("状态：运行中");
+		expect(sessionFilterLabel("provider:openai")).toBe("供应商：openai");
+		expect(sessionFilterLabel("model:org/model:v2")).toBe("模型：org/model:v2");
+		expect(sessionFilterLabel("workspace:C:/work")).toBe("工作区：C:/work");
+		expect(sessionFilterLabel("unknown:value")).toBe("unknown:value");
 	});
 });

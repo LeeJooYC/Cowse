@@ -401,9 +401,9 @@ describe("OnboardingView", () => {
 			buttonByText("继续").click();
 		});
 		// Connecting a Cline account routes through the GitHub integration step.
-		expect(container.textContent).toContain("Connect GitHub");
+		expect(container.textContent).toContain("连接 GitHub");
 		await act(async () => {
-			buttonByText("Skip for now").click();
+			buttonByText("暂时跳过").click();
 		});
 		// The redesigned completion step places transparent content over a static,
 		// wide version of the hero grid.
@@ -446,7 +446,7 @@ describe("OnboardingView", () => {
 		await act(async () => {
 			buttonByText("继续").click();
 		});
-		expect(container.textContent).not.toContain("Connect GitHub");
+		expect(container.textContent).not.toContain("连接 GitHub");
 		expect(container.textContent).toContain("设置完成");
 	});
 
@@ -470,7 +470,7 @@ describe("OnboardingView", () => {
 			buttonByText("继续").click();
 		});
 		expect(invoke).toHaveBeenCalledWith("get_feature_flags");
-		expect(container.textContent).not.toContain("Connect GitHub");
+		expect(container.textContent).not.toContain("连接 GitHub");
 		expect(container.textContent).toContain("设置完成");
 	});
 
@@ -552,9 +552,9 @@ describe("OnboardingView", () => {
 			enabled: true,
 			api_key: "cline_key_123",
 		});
-		expect(container.textContent).toContain("Connect GitHub");
+		expect(container.textContent).toContain("连接 GitHub");
 		await act(async () => {
-			buttonByText("Skip for now").click();
+			buttonByText("暂时跳过").click();
 		});
 		expect(container.textContent).toContain("设置完成");
 		expect(container.textContent).toContain("已连接你的 Cline 账号");
@@ -657,9 +657,9 @@ describe("OnboardingView", () => {
 		expect(invoke).toHaveBeenCalledWith("run_provider_oauth_login", {
 			provider: "cline",
 		});
-		expect(container.textContent).toContain("Connect GitHub");
+		expect(container.textContent).toContain("连接 GitHub");
 		await act(async () => {
-			buttonByText("Skip for now").click();
+			buttonByText("暂时跳过").click();
 		});
 		expect(container.textContent).toContain("设置完成");
 		expect(

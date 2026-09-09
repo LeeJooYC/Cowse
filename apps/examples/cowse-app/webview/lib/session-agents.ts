@@ -391,23 +391,22 @@ export function mergeAgentActivity(
 export function describeAgentActivity(activity: SessionAgentActivity): string {
 	const parts: string[] = [];
 	if (activity.running > 0) {
-		parts.push(`${activity.running} running`);
+		parts.push(`${activity.running} 个运行中`);
 	}
 	if (activity.completed > 0) {
-		parts.push(`${activity.completed} completed`);
+		parts.push(`${activity.completed} 个已完成`);
 	}
 	if (activity.failed > 0) {
-		parts.push(`${activity.failed} failed`);
+		parts.push(`${activity.failed} 个失败`);
 	}
 	if (activity.cancelled > 0) {
-		parts.push(`${activity.cancelled} cancelled`);
+		parts.push(`${activity.cancelled} 个已取消`);
 	}
 	if (activity.unresolved > 0) {
-		parts.push(`${activity.unresolved} with no recorded outcome`);
+		parts.push(`${activity.unresolved} 个未记录结果`);
 	}
-	const noun = activity.total === 1 ? "agent" : "agents";
 	if (parts.length === 0) {
-		return `${activity.total} ${noun}`;
+		return `${activity.total} 个智能体`;
 	}
-	return `${activity.total} ${noun}: ${parts.join(", ")}`;
+	return `${activity.total} 个智能体：${parts.join("，")}`;
 }

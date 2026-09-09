@@ -36,6 +36,7 @@ import {
 	isProviderConnected,
 	type ProviderAuthKind,
 } from "@/lib/provider-connection";
+import { localizeConfigField } from "@/lib/provider-field-localization";
 import { getProviderApiKeyUrl } from "@/lib/provider-key-urls";
 import {
 	loadProviderModels,
@@ -120,32 +121,6 @@ const AUTH_KIND_LABEL: Record<ProviderAuthKind, string> = {
 	local: "本地 CLI",
 	"api-key": "API 密钥",
 };
-
-function localizeConfigField(field: ProviderConfigField): {
-	label: string;
-	description?: string;
-	placeholder?: string;
-} {
-	if (field.path === "apiKey") {
-		return {
-			label: "API 密钥",
-			description: "供应商提供的 API 密钥。",
-			placeholder: "输入 API 密钥…",
-		};
-	}
-	if (field.path === "baseUrl") {
-		return {
-			label: "Base URL",
-			description: "用于发送供应商请求的基础地址。",
-			placeholder: field.placeholder,
-		};
-	}
-	return {
-		label: field.label,
-		description: field.description,
-		placeholder: field.placeholder,
-	};
-}
 
 function AuthKindHint({ kind }: { kind: ProviderAuthKind }) {
 	const Icon =
@@ -461,7 +436,9 @@ function ConfigFieldRow({
 			</header>
 			{field.type === "boolean" ? (
 				<div className="flex items-center justify-end">
-					<span className="text-sm text-muted-foreground">{field.label}</span>
+					<span className="text-sm text-muted-foreground">
+						{localizedField.label}
+					</span>
 					<Switch
 						checked={Boolean(value)}
 						onCheckedChange={(checked) => onCommit(checked)}
@@ -950,18 +927,22 @@ export function ProviderDetailContent({
 								修改后请点击“保存并重连”生效。
 							</p>
 							<div className="ml-auto flex shrink-0 items-center gap-2">
-							{onConnect ? <Button size="sm" variant="outline" onClick={onConnect}>保存并重连</Button> : null}
-							{onDisconnect ? (
-								<Button
-									className="shrink-0"
-									onClick={handleDisconnect}
-									size="sm"
-									type="button"
-									variant="outline"
-								>
-									断开连接
-								</Button>
-							) : null}
+								{onConnect ? (
+									<Button size="sm" variant="outline" onClick={onConnect}>
+										保存并重连
+									</Button>
+								) : null}
+								{onDisconnect ? (
+									<Button
+										className="shrink-0"
+										onClick={handleDisconnect}
+										size="sm"
+										type="button"
+										variant="outline"
+									>
+										断开连接
+									</Button>
+								) : null}
 							</div>
 						</>
 					) : (

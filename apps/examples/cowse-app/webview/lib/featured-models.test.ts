@@ -50,7 +50,7 @@ describe("buildModelPickerData", () => {
 			label: "Claude Opus 5",
 			section: "recommended",
 		});
-		expect(options[1]).toMatchObject({ badge: "Free", section: "free" });
+		expect(options[1]).toMatchObject({ badge: "免费", section: "free" });
 		// The "all" tier is sorted by display name, not raw id.
 		expect(options[2]?.label).toBe("AAA First");
 	});

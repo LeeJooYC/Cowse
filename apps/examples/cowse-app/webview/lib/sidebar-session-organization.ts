@@ -146,15 +146,15 @@ function scheduleGroupLabel(thread: SessionThread): string {
  * best way to tell them apart.
  */
 export function scheduleRunLabel(thread: SessionThread): string {
-	if (thread.scheduleRunNumber) return `Run ${thread.scheduleRunNumber}`;
+	if (thread.scheduleRunNumber) return `第 ${thread.scheduleRunNumber} 次运行`;
 	const started = parseTimestamp(thread.startedAt);
 	if (Number.isFinite(started)) {
-		return new Date(started).toLocaleString(undefined, {
+		return new Date(started).toLocaleString("zh-CN", {
 			month: "short",
 			day: "numeric",
 			hour: "numeric",
 			minute: "2-digit",
 		});
 	}
-	return "Run";
+	return "运行";
 }

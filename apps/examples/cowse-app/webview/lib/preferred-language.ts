@@ -47,6 +47,15 @@ export function savePreferredLanguage(value: PreferredLanguage): void {
 	);
 }
 
+// Only used by browser SpeechRecognition, not provider transcription requests.
+export function resolveSpeechRecognitionLanguage(
+	value: unknown,
+	browserLanguage = typeof navigator === "undefined" ? "" : navigator.language,
+): string {
+	const language = normalizePreferredLanguage(value);
+	return language === "default" ? browserLanguage || "en-US" : language;
+}
+
 export function applyPreferredLanguage(prompt: string, value: unknown): string {
 	const language = normalizePreferredLanguage(value);
 	return language === "default"

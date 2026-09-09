@@ -323,7 +323,7 @@ function getPathScope(path: string, workspaceRoot: string): ItemScope {
 function ScopeBadge({ scope }: { scope: ItemScope }) {
 	return (
 		<Badge variant="outline" className="shrink-0 text-muted-foreground">
-			{scope}
+			{scope === "Project" ? "项目" : "全局"}
 		</Badge>
 	);
 }
@@ -694,7 +694,7 @@ export function CustomizationSectionView({
 						status: "success",
 						message:
 							result.message ??
-							`Uninstalled ${target.name ?? target.id ?? target.path}.`,
+							`已卸载 ${target.name ?? target.id ?? target.path}。`,
 					});
 					return next;
 				});
@@ -720,7 +720,7 @@ export function CustomizationSectionView({
 
 	const formatExecutionTs = useCallback((value: string | null): string => {
 		if (!value) {
-			return "never";
+			return "从未执行";
 		}
 		const asNumber = Number(value);
 		const date = Number.isFinite(asNumber)
@@ -729,7 +729,7 @@ export function CustomizationSectionView({
 		if (Number.isNaN(date.getTime())) {
 			return value;
 		}
-		return date.toLocaleString();
+		return date.toLocaleString("zh-CN");
 	}, []);
 
 	useEffect(() => {
@@ -947,7 +947,7 @@ export function CustomizationSectionView({
 				variant="destructive"
 			>
 				{uninstalling ? <Spinner /> : <Trash2 className="size-4" />}
-				{uninstalling ? "Uninstalling..." : "Uninstall"}
+				{uninstalling ? "正在卸载…" : "卸载"}
 			</Button>
 		);
 	};
@@ -958,7 +958,7 @@ export function CustomizationSectionView({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						aria-label={`More actions for ${target.name ?? "plugin"}`}
+						aria-label={`${target.name ?? "插件"}的更多操作`}
 						className="m-0 size-auto shrink-0 p-0 text-muted-foreground"
 						onClick={(event) => event.stopPropagation()}
 						size="icon"
@@ -975,7 +975,7 @@ export function CustomizationSectionView({
 						}
 					>
 						<Copy className="size-4" />
-						Copy path
+						复制路径
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="text-destructive focus:text-destructive"
@@ -983,7 +983,7 @@ export function CustomizationSectionView({
 						onClick={() => void uninstallLocalPrimitive(target)}
 					>
 						{uninstalling ? <Spinner /> : <Trash2 className="size-4" />}
-						{uninstalling ? "Uninstalling..." : "Uninstall"}
+						{uninstalling ? "正在卸载…" : "卸载"}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -1022,16 +1022,20 @@ export function CustomizationSectionView({
 					</h3>
 					<ScopeBadge scope={item.scope} />
 					<Badge variant="outline" className="shrink-0 text-muted-foreground">
-						{item.type}
+						{item.type === "workflow"
+							? "工作流"
+							: item.type === "skill"
+								? "技能"
+								: item.type}
 					</Badge>
 					{item.agentPlugin === true ? (
 						<Badge variant="outline" className="shrink-0 text-muted-foreground">
-							Agent Plugin
+							智能体插件
 						</Badge>
 					) : null}
 					{context?.matchedEntries?.length ? (
 						<Badge variant="outline" className="shrink-0 text-muted-foreground">
-							Marketplace
+							扩展市场
 						</Badge>
 					) : null}
 				</div>
@@ -1062,21 +1066,21 @@ export function CustomizationSectionView({
 		const key = plugin.path;
 		const contributionGroups = [
 			{
-				label: "Tools",
+				label: "工具",
 				items:
 					plugin.contributions?.tools ??
 					(pluginToolsByPluginKey.get(plugin.path) ?? []).map(
 						(tool) => tool.name,
 					),
 			},
-			{ label: "Skills", items: plugin.contributions?.skills ?? [] },
-			{ label: "Rules", items: plugin.contributions?.rules ?? [] },
-			{ label: "Hooks", items: plugin.contributions?.hooks ?? [] },
-			{ label: "Commands", items: plugin.contributions?.commands ?? [] },
-			{ label: "MCP servers", items: plugin.contributions?.mcpServers ?? [] },
-			{ label: "Providers", items: plugin.contributions?.providers ?? [] },
+			{ label: "技能", items: plugin.contributions?.skills ?? [] },
+			{ label: "规则", items: plugin.contributions?.rules ?? [] },
+			{ label: "钩子", items: plugin.contributions?.hooks ?? [] },
+			{ label: "命令", items: plugin.contributions?.commands ?? [] },
+			{ label: "MCP 服务", items: plugin.contributions?.mcpServers ?? [] },
+			{ label: "供应商", items: plugin.contributions?.providers ?? [] },
 			{
-				label: "Capabilities",
+				label: "能力",
 				items: plugin.contributions?.capabilities ?? [],
 			},
 		].filter((group) => group.items.length > 0);
@@ -1089,15 +1093,15 @@ export function CustomizationSectionView({
 					</h3>
 					<ScopeBadge scope={scope} />
 					<Badge variant="outline" className="shrink-0 text-muted-foreground">
-						{plugin.agentPlugin === true ? "Agent Plugin" : "Cline Plugin"}
+						{plugin.agentPlugin === true ? "智能体插件" : "Cline 插件"}
 					</Badge>
 					{context?.matchedEntries?.length ? (
 						<Badge variant="outline" className="shrink-0 text-muted-foreground">
-							Marketplace
+							扩展市场
 						</Badge>
 					) : null}
 					<span className="text-xs text-muted-foreground">
-						{plugin.enabled ? "Enabled" : "Disabled"}
+						{plugin.enabled ? "已启用" : "已禁用"}
 					</span>
 					<Switch
 						checked={plugin.enabled}
@@ -1109,7 +1113,7 @@ export function CustomizationSectionView({
 							plugin.toggleable === false ||
 							togglingPluginPaths.has(plugin.path)
 						}
-						aria-label={`Toggle ${plugin.name}`}
+						aria-label={`切换 ${plugin.name} 的启用状态`}
 					/>
 					{plugin.agentPlugin !== true
 						? renderPluginMenu({
@@ -1134,13 +1138,13 @@ export function CustomizationSectionView({
 					) : null}
 					{plugin.contributions?.inspectionStatus === "disabled" ? (
 						<p className="mb-2 text-xs text-muted-foreground">
-							Enable this plugin to inspect its dynamic contributions.
+							启用此插件后，可查看它动态提供的功能。
 						</p>
 					) : null}
 					{contributionGroups.length > 0 ? (
 						<div>
 							<div className="flex flex-wrap items-center gap-2 py-2 text-xs font-medium text-foreground">
-								<span className="mr-1">Contributions</span>
+								<span className="mr-1">提供的功能</span>
 								{contributionGroups.map((group) => (
 									<Badge key={group.label} variant="outline">
 										{group.label} {group.items.length}
@@ -1166,7 +1170,7 @@ export function CustomizationSectionView({
 						</div>
 					) : (
 						<p className="text-xs text-muted-foreground">
-							No plugin contributions found.
+							未发现插件提供的功能。
 						</p>
 					)}
 				</div>
@@ -1211,12 +1215,12 @@ export function CustomizationSectionView({
 					</Badge>
 					{context?.matchedEntries?.length ? (
 						<Badge variant="outline" className="shrink-0 text-muted-foreground">
-							Marketplace
+							扩展市场
 						</Badge>
 					) : null}
 					{server.disabled ? (
 						<Badge variant="outline" className="shrink-0 text-muted-foreground">
-							Disabled
+							已禁用
 						</Badge>
 					) : null}
 				</div>
@@ -1225,7 +1229,7 @@ export function CustomizationSectionView({
 						([server.command, ...(server.args ?? [])]
 							.filter(Boolean)
 							.join(" ") ||
-							"No launch command configured.")}
+							"尚未配置启动命令。")}
 				</p>
 				{mcp.settingsPath ? (
 					<p className="truncate text-xs font-mono text-muted-foreground">
@@ -1406,8 +1410,9 @@ export function CustomizationSectionView({
 				<div>
 					{hookExecutionLoading && hookExecutionSessionId && (
 						<p className="mb-4 text-xs text-muted-foreground">
-							Execution status is based on hook events in session{" "}
-							<span className="font-mono">{hookExecutionSessionId}</span>.
+							执行状态依据会话
+							<span className="font-mono">{hookExecutionSessionId}</span>{" "}
+							中的钩子事件。
 						</p>
 					)}
 
@@ -1455,8 +1460,8 @@ export function CustomizationSectionView({
 															)}
 														>
 															{executed
-																? `${stats?.count ?? 0} executed`
-																: "never executed"}
+																? `已执行 ${stats?.count ?? 0} 次`
+																: "从未执行"}
 														</Badge>
 													);
 												})()}
@@ -1465,7 +1470,7 @@ export function CustomizationSectionView({
 									</div>
 									{hook.hookEventName ? (
 										<p className="text-xs leading-5 text-muted-foreground">
-											Last run:{" "}
+											上次执行：{" "}
 											{formatExecutionTs(
 												hookExecutionByEvent[hook.hookEventName]?.lastTs ??
 													null,
@@ -1513,7 +1518,11 @@ export function CustomizationSectionView({
 										{item.name}
 									</h3>
 									<span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
-										{item.type}
+										{item.type === "workflow"
+											? "工作流"
+											: item.type === "skill"
+												? "技能"
+												: item.type}
 									</span>
 								</div>
 								<p className="mt-2 ml-7 text-xs text-muted-foreground">
@@ -1568,19 +1577,19 @@ export function CustomizationSectionView({
 			{activeTab === "Plugins" && !catalogPrimitive && (
 				<div>
 					<p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-						Cline and portable Agent Plugins discovered by the shared Hub.
-						Changes apply when a session is rebuilt or started.
+						共享 Hub 发现的 Cline
+						插件和可移植智能体插件。更改在会话重建或启动时生效。
 					</p>
 
 					<div className="mb-6">
 						<h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-							Cline Plugins ({clinePlugins.length})
+							Cline 插件（{clinePlugins.length}）
 						</h3>
 						<div className="flex flex-col gap-3">
 							{clinePlugins.map((plugin) => renderPluginCard(plugin))}
 							{clinePlugins.length === 0 && (
 								<p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-									No Cline Plugins found.
+									未找到 Cline 插件。
 								</p>
 							)}
 						</div>
@@ -1588,13 +1597,13 @@ export function CustomizationSectionView({
 
 					<div>
 						<h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-							Agent Plugins ({agentPlugins.length})
+							智能体插件（{agentPlugins.length}）
 						</h3>
 						<div className="flex flex-col gap-3">
 							{agentPlugins.map((plugin) => renderPluginCard(plugin))}
 							{agentPlugins.length === 0 && (
 								<p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-									No Agent Plugins found.
+									未找到智能体插件。
 								</p>
 							)}
 						</div>
@@ -1700,7 +1709,7 @@ export function CustomizationSectionView({
 														void setToolEnabled(tool);
 													}}
 													disabled={isToggling}
-													aria-label={`Toggle ${tool.name}`}
+													aria-label={`切换 ${tool.name} 的启用状态`}
 												/>
 											</div>
 											<p className="line-clamp-2 text-xs leading-5 text-muted-foreground">

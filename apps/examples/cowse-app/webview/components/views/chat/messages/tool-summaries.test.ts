@@ -94,7 +94,7 @@ describe("buildToolPresentation", () => {
 		);
 		expect(presentation.payload).toBeNull();
 		expect(presentation.summary.kind).toBe("search");
-		expect(presentation.summary.label).toBe("已搜索");
+		expect(presentation.summary.label).toBe("Searched");
 	});
 
 	it("treats tool_call_start hook events as in progress", () => {
@@ -150,7 +150,7 @@ describe("buildGroupedToolLabel over presentations", () => {
 			toolName: "read_files",
 			input: { paths: ["a.ts"] },
 		});
-		expect(buildGroupedToolLabel([toGroupInput(only)])).toBe("已读取文件 a.ts");
+		expect(buildGroupedToolLabel([toGroupInput(only)])).toBe("Read file a.ts");
 	});
 
 	it("merges consecutive aggregates that share a key", () => {

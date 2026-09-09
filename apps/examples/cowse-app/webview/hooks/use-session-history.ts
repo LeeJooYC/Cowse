@@ -221,7 +221,7 @@ function toTitle(session: SessionHistoryItem): string {
 	}
 	const line = normalizeTitle(session.prompt).trim().split("\n")[0]?.trim();
 	if (line) return line;
-	return `Session ${session.sessionId.slice(-6)}`;
+	return `会话 ${session.sessionId.slice(-6)}`;
 }
 
 function titleFromMessages(messages: SessionMessage[]): string | null {
@@ -1014,7 +1014,7 @@ export function useSessionHistory({
 			setThreads((current) =>
 				updateThreadById(current, sessionId, (thread) => ({
 					...thread,
-					title: nextTitle || `Session ${sessionId.slice(-6)}`,
+					title: nextTitle || `会话 ${sessionId.slice(-6)}`,
 				})),
 			);
 		};
@@ -1340,11 +1340,9 @@ export function useSessionHistory({
 			} catch (error) {
 				toast({
 					variant: "destructive",
-					title: "Rename failed",
+					title: "重命名失败",
 					description:
-						error instanceof Error
-							? error.message
-							: "The session title could not be updated.",
+						error instanceof Error ? error.message : "无法更新会话标题。",
 				});
 				return false;
 			} finally {
@@ -1392,11 +1390,9 @@ export function useSessionHistory({
 				applyPinned(!pinned);
 				toast({
 					variant: "destructive",
-					title: pinned ? "Pin failed" : "Unpin failed",
+					title: pinned ? "置顶失败" : "取消置顶失败",
 					description:
-						error instanceof Error
-							? error.message
-							: "The session could not be updated.",
+						error instanceof Error ? error.message : "无法更新会话。",
 				});
 				return false;
 			}
@@ -1431,7 +1427,7 @@ export function useSessionHistory({
 				});
 				const newSessionId = payload.sessionId?.trim();
 				if (!newSessionId) {
-					throw new Error("Fork did not return a new session id.");
+					throw new Error("复制会话未返回新会话 ID。");
 				}
 				const forkedSession: SessionHistoryItem = {
 					sessionId: newSessionId,
@@ -1455,11 +1451,9 @@ export function useSessionHistory({
 			} catch (error) {
 				toast({
 					variant: "destructive",
-					title: "Fork failed",
+					title: "复制会话失败",
 					description:
-						error instanceof Error
-							? error.message
-							: "The session could not be forked.",
+						error instanceof Error ? error.message : "无法复制为新会话。",
 				});
 				return false;
 			} finally {
@@ -1483,9 +1477,7 @@ export function useSessionHistory({
 						? deleteResult
 						: deleteResult.deleted === true;
 				if (!deleted) {
-					throw new Error(
-						"The session could not be removed from local history.",
-					);
+					throw new Error("无法从本地历史记录中删除此会话。");
 				}
 				onDeleteSession?.(threadId);
 				window.dispatchEvent(
@@ -1499,11 +1491,11 @@ export function useSessionHistory({
 			} catch (error) {
 				toast({
 					variant: "destructive",
-					title: "Delete failed",
+					title: "删除失败",
 					description:
 						error instanceof Error
 							? error.message
-							: "The session could not be removed from local history.",
+							: "无法从本地历史记录中删除此会话。",
 				});
 				return false;
 			} finally {
@@ -1534,8 +1526,8 @@ export function useSessionHistory({
 				if (!loaded) {
 					toast({
 						variant: "destructive",
-						title: "Could not load more sessions",
-						description: "Session history is unavailable right now.",
+						title: "无法加载更多会话",
+						description: "会话历史记录暂时不可用。",
 					});
 				}
 				return loaded;

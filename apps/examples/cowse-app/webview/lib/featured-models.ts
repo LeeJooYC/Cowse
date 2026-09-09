@@ -12,9 +12,8 @@ export type ModelPickerData = {
 };
 
 // Section copy mirrors the CLI's featured picker so the products read the same.
-const FREE_SECTION_DESCRIPTION = "Try with limited usage at no cost";
-const CLINE_PASS_FREE_SECTION_DESCRIPTION =
-	"Try with limited usage, separate from ClinePass quota";
+const FREE_SECTION_DESCRIPTION = "免费试用，额度有限";
+const CLINE_PASS_FREE_SECTION_DESCRIPTION = "限额试用，不占用 ClinePass 额度";
 
 function displayName(model: ProviderModel): string {
 	return model.name?.trim() || model.id;
@@ -69,7 +68,7 @@ export function buildModelPickerData(
 			"recommended",
 			(model) => model.featured?.tags[0],
 		);
-		const free = tierOptions(models, "free", "free", () => "Free");
+		const free = tierOptions(models, "free", "free", () => "免费");
 		if (recommended.length === 0 && free.length === 0) {
 			return { options: flatOptions(models) };
 		}
@@ -84,20 +83,20 @@ export function buildModelPickerData(
 		return {
 			options: [...recommended, ...free, ...rest],
 			sections: [
-				{ id: "recommended", label: "Recommended" },
+				{ id: "recommended", label: "推荐" },
 				{
 					description: FREE_SECTION_DESCRIPTION,
 					id: "free",
-					label: "Free",
+					label: "免费",
 				},
-				{ id: "all", label: "All models" },
+				{ id: "all", label: "全部模型" },
 			],
 		};
 	}
 
 	if (providerId === "cline-pass") {
 		const subscribed = tierOptions(models, "subscribed", "subscribed");
-		const free = tierOptions(models, "free", "free", () => "Free");
+		const free = tierOptions(models, "free", "free", () => "免费");
 		if (subscribed.length === 0 && free.length === 0) {
 			return { options: flatOptions(models) };
 		}
@@ -115,14 +114,14 @@ export function buildModelPickerData(
 		return {
 			options: [...subscribed, ...free, ...rest],
 			sections: [
-				{ id: "subscribed", label: "Subscribed" },
+				{ id: "subscribed", label: "已订阅" },
 				{
 					description: CLINE_PASS_FREE_SECTION_DESCRIPTION,
 					id: "free",
-					label: "Free",
+					label: "免费",
 				},
 				...(rest.length > 0
-					? [{ id: "all", label: "All models" } as SearchComboboxSection]
+					? [{ id: "all", label: "全部模型" } as SearchComboboxSection]
 					: []),
 			],
 		};

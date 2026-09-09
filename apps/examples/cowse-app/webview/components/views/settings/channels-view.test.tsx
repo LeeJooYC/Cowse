@@ -218,7 +218,7 @@ describe("ChannelsContent", () => {
 		expect(container.textContent).not.toContain("Mattermost");
 		expect(
 			container
-				.querySelector('button[aria-label="Connect Telegram"]')
+				.querySelector('button[aria-label="连接 Telegram"]')
 				?.getAttribute("aria-checked"),
 		).toBe("false");
 
@@ -228,7 +228,7 @@ describe("ChannelsContent", () => {
 		) as HTMLInputElement;
 		await changeInput(tokenInput, "7123456789:test-token");
 		await click(
-			container.querySelector('button[aria-label="Show Bot token"]') as Element,
+			container.querySelector('button[aria-label="显示 Bot token"]') as Element,
 		);
 		expect(tokenInput.type).toBe("text");
 		await click(
@@ -240,7 +240,7 @@ describe("ChannelsContent", () => {
 			) as HTMLInputElement,
 			"123456789",
 		);
-		await click(buttonWithText("Save"));
+		await click(buttonWithText("保存"));
 
 		await vi.waitFor(() => {
 			expect(invokeMock).toHaveBeenCalledWith("start_connector_channel", {
@@ -254,7 +254,7 @@ describe("ChannelsContent", () => {
 			expect(container.textContent).toContain("@test_bot");
 			expect(
 				container
-					.querySelector('button[aria-label="Disconnect Telegram"]')
+					.querySelector('button[aria-label="断开连接 Telegram"]')
 					?.getAttribute("aria-checked"),
 			).toBe("true");
 			expect(channelListIds()).toEqual(["telegram", "slack"]);
@@ -298,11 +298,11 @@ describe("ChannelsContent", () => {
 		await changeTextarea(textarea, '{"private_key":"secret"}');
 		await click(
 			container.querySelector(
-				'button[aria-label="Show Service account credentials JSON"]',
+				'button[aria-label="显示 Service account credentials JSON"]',
 			) as Element,
 		);
 		expect(textarea.className).not.toContain("[-webkit-text-security:disc]");
-		await click(buttonWithText("Save"));
+		await click(buttonWithText("保存"));
 
 		await vi.waitFor(() => {
 			expect(invokeMock).toHaveBeenCalledWith("start_connector_channel", {
@@ -335,7 +335,7 @@ describe("ChannelsContent", () => {
 			"#channel-telegram-credential--k",
 		) as HTMLInputElement;
 		await changeInput(tokenInput, "7123456789:retry-token");
-		await click(buttonWithText("Save"));
+		await click(buttonWithText("保存"));
 
 		await vi.waitFor(() => {
 			expect(container.textContent).toContain("connector failed to start");
@@ -388,7 +388,7 @@ describe("ChannelsContent", () => {
 		).toBe(false);
 		expect(container.textContent).not.toContain("New Connection");
 		await changeInput(tokenInput, "7123456789:updated-token");
-		await click(buttonWithText("Save"));
+		await click(buttonWithText("保存"));
 
 		await vi.waitFor(() => {
 			expect(invokeMock).toHaveBeenCalledWith("start_connector_channel", {
@@ -397,7 +397,7 @@ describe("ChannelsContent", () => {
 				security: { enabled: false, values: {} },
 			});
 			expect(container.textContent).toContain("@first_bot");
-			expect(container.textContent).toContain("Active connection");
+			expect(container.textContent).toContain("当前连接");
 		});
 	});
 
@@ -413,11 +413,11 @@ describe("ChannelsContent", () => {
 		) as HTMLButtonElement;
 		expect(slackTrigger.getAttribute("aria-expanded")).toBe("false");
 		await click(
-			container.querySelector('button[aria-label="Connect Slack"]') as Element,
+			container.querySelector('button[aria-label="连接 Slack"]') as Element,
 		);
 
 		expect(slackTrigger.getAttribute("aria-expanded")).toBe("true");
-		expect(container.textContent).toContain("Bot token is required");
+		expect(container.textContent).toContain("Bot token 为必填项");
 		expect(container.textContent).toContain("App-level token");
 		expect(container.textContent).not.toContain("Signing secret");
 		await changeInput(
@@ -429,8 +429,8 @@ describe("ChannelsContent", () => {
 		expect(container.textContent).toContain("Signing secret");
 		expect(container.textContent).not.toContain("App-level token");
 
-		await click(buttonWithText("Save"));
-		expect(container.textContent).toContain("Bot token is required");
+		await click(buttonWithText("保存"));
+		expect(container.textContent).toContain("Bot token 为必填项");
 		expect(invokeMock).not.toHaveBeenCalledWith(
 			"start_connector_channel",
 			expect.anything(),
@@ -461,16 +461,16 @@ describe("ChannelsContent", () => {
 		});
 		await click(buttonWithText("Telegram"));
 		expect(
-			container.querySelector('button[aria-label^="Disconnect @"]'),
+			container.querySelector('button[aria-label^="断开连接 @"]'),
 		).toBeNull();
-		await click(buttonWithText("Reset"));
+		await click(buttonWithText("重置"));
 
 		await vi.waitFor(() => {
-			expect(document.body.textContent).toContain("Reset Telegram?");
+			expect(document.body.textContent).toContain("重置 Telegram？");
 		});
 		await click(
 			buttonWithText(
-				"Reset",
+				"重置",
 				document.querySelector('[role="alertdialog"]') as Element,
 			),
 		);
@@ -481,7 +481,7 @@ describe("ChannelsContent", () => {
 			});
 			expect(
 				container
-					.querySelector('button[aria-label="Connect Telegram"]')
+					.querySelector('button[aria-label="连接 Telegram"]')
 					?.getAttribute("aria-checked"),
 			).toBe("false");
 		});

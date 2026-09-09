@@ -381,12 +381,12 @@ export default function Home() {
 					{ sessionId },
 				);
 				if (!session) {
-					throw new Error("The session for this run is no longer available.");
+					throw new Error("此次运行的会话已不可用。");
 				}
 				handleOpenSession(session);
 			} catch (error) {
 				toast({
-					title: "Unable to open run",
+					title: "无法打开运行记录",
 					description: error instanceof Error ? error.message : String(error),
 					variant: "destructive",
 				});
@@ -400,7 +400,12 @@ export default function Home() {
 				switch (action.type) {
 					case "full-quit":
 						void requestFullQuit().catch((error) => {
-							toast({ title: "无法完全退出", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
+							toast({
+								title: "无法完全退出",
+								description:
+									error instanceof Error ? error.message : String(error),
+								variant: "destructive",
+							});
 						});
 						break;
 					case "open-session":
@@ -1062,7 +1067,7 @@ function ChatThreadPane({
 				throw new Error(
 					error instanceof Error && error.message.trim()
 						? error.message
-						: "The folder picker could not be opened.",
+						: "无法打开文件夹选择器。",
 				);
 			}
 		},
@@ -1296,8 +1301,8 @@ function ChatThreadPane({
 			if (!deleted) {
 				toast({
 					variant: "destructive",
-					title: "Delete failed",
-					description: "The session could not be removed from local history.",
+					title: "删除失败",
+					description: "无法从本地历史记录中删除此会话。",
 				});
 				return;
 			}
@@ -1321,10 +1326,10 @@ function ChatThreadPane({
 			const description =
 				error instanceof Error
 					? error.message
-					: "The session could not be removed from local history.";
+					: "无法从本地历史记录中删除此会话。";
 			toast({
 				variant: "destructive",
-				title: "Delete failed",
+				title: "删除失败",
 				description,
 			});
 		} finally {
@@ -1607,10 +1612,10 @@ function ChatThreadPane({
 				<div className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
 				<p className="text-sm text-muted-foreground">
 					{chatTransportState === "unavailable"
-						? "Desktop backend unavailable"
+						? "桌面后台不可用"
 						: chatTransportState !== "connected"
-							? "Connecting..."
-							: "Loading..."}
+							? "正在连接…"
+							: "正在加载…"}
 				</p>
 				{chatTransportError ? (
 					<p className="max-w-xl px-6 text-center text-xs text-muted-foreground">

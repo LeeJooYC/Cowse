@@ -34,14 +34,14 @@ describe("normalizeRuntimeConfig", () => {
 describe("resolveCredentialError", () => {
 	it("requires a provider", () => {
 		expect(resolveCredentialError(makeConfig({ provider: "  " }))).toMatch(
-			/Provider is required/,
+			/开始会话前，请先选择供应商/,
 		);
 	});
 
 	it("blocks API-key providers without a key", () => {
 		expect(
 			resolveCredentialError(makeConfig({ provider: "anthropic" })),
-		).toMatch(/Missing API key/);
+		).toMatch(/缺少 API 密钥/);
 	});
 
 	it("allows API-key providers with a key", () => {

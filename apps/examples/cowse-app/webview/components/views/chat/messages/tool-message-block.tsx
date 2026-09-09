@@ -174,7 +174,7 @@ const ToolCallRow = memo(function ToolCallRow({
 			setProceedError(
 				error instanceof Error
 					? error.message
-					: "Could not detach the running command.",
+					: "无法将正在运行的命令转入后台。",
 			);
 		} finally {
 			setIsProceeding(false);

@@ -163,9 +163,7 @@ function WorkspacePicker({
 			onClose();
 			return;
 		}
-		setError(
-			`Couldn't open "${next}". Check that the folder exists and try again.`,
-		);
+		setError(`无法打开“${next}”。请确认文件夹存在后重试。`);
 	};
 
 	const handleAddWorkspace = async () => {
@@ -181,7 +179,7 @@ function WorkspacePicker({
 			setError(
 				pickError instanceof Error && pickError.message.trim()
 					? pickError.message
-					: "The folder picker could not be opened. Type a folder path above instead.",
+					: "无法打开文件夹选择器，请在上方输入文件夹路径。",
 			);
 		} finally {
 			setPicking(false);
@@ -420,13 +418,13 @@ function BranchPicker({
 				<div className={PANEL_CLASS}>
 					<SearchInput
 						onChange={setSearch}
-						placeholder="Search branches"
+						placeholder="搜索分支"
 						value={search}
 					/>
 					<div className="p-1.5">
 						{loading ? (
 							<div className="px-2 py-4 text-xs text-muted-foreground">
-								Loading...
+								正在加载…
 							</div>
 						) : (
 							<div
@@ -435,7 +433,7 @@ function BranchPicker({
 							>
 								{filteredBranches.length === 0 ? (
 									<div className="px-2 py-2 text-xs text-muted-foreground">
-										No branches found
+										未找到分支
 									</div>
 								) : (
 									filteredBranches.map((branch) => (

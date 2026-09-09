@@ -32,7 +32,7 @@ export function ModelIdInput({
 				>
 					<span className="font-mono">{model}</span>
 					<Button
-						aria-label={`Remove ${model}`}
+						aria-label={`移除 ${model}`}
 						className="text-foreground hover:text-foreground"
 						disabled={disabled}
 						onClick={() => onChange(models.filter((entry) => entry !== model))}
@@ -62,7 +62,7 @@ export function ModelIdInput({
 						onChange(models.slice(0, -1));
 					}
 				}}
-				placeholder={models.length === 0 ? "Type model ID and press Enter" : ""}
+				placeholder={models.length === 0 ? "输入模型 ID 后按回车" : ""}
 				type="text"
 				value={modelInput}
 			/>

@@ -158,7 +158,7 @@ describe("WelcomeScreen", () => {
 		await clickButton("Review PR checks");
 		expect(approveAgendaTaskMock).not.toHaveBeenCalled();
 		expect(document.body.textContent).toContain(task.instructions);
-		await clickButton("Approve and start", false, document);
+		await clickButton("批准并开始", false, document);
 
 		expect(approveAgendaTaskMock).toHaveBeenCalledWith({
 			taskId: "task-1",
@@ -186,7 +186,7 @@ describe("WelcomeScreen", () => {
 		});
 
 		expect(container.textContent).toContain("Finish accessibility review");
-		expect(container.textContent).toContain("Follow-up · P1");
+		expect(container.textContent).toContain("后续跟进 · P1");
 	});
 
 	it("hides expired workspace suggestions", async () => {

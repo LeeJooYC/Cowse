@@ -48,7 +48,7 @@ function MessageImages({
 		<div className="grid max-w-2xl gap-2">
 			{images.map((image, index) => (
 				<button
-					aria-label={`Expand attachment ${index + 1}`}
+					aria-label={`放大附件 ${index + 1}`}
 					className="cursor-zoom-in overflow-hidden rounded-lg border border-border bg-muted text-left transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 					key={image.id}
 					onClick={() => onExpandImage?.(image)}
@@ -56,7 +56,7 @@ function MessageImages({
 				>
 					{/* biome-ignore lint/performance/noImgElement: In-memory data URLs do not have dimensions and cannot use Next's optimizer. */}
 					<img
-						alt={`Attachment ${index + 1}`}
+						alt={`附件 ${index + 1}`}
 						className="max-h-56.25 max-w-56.25 object-contain"
 						src={`data:${image.mediaType};base64,${image.data}`}
 					/>
@@ -189,7 +189,7 @@ export const MessageBubble = memo(function MessageBubble({
 	const messageDate = new Date(message.createdAt);
 	const hasValidMessageDate = !Number.isNaN(messageDate.getTime());
 	const messageTime = hasValidMessageDate
-		? messageDate.toLocaleTimeString(undefined, {
+		? messageDate.toLocaleTimeString("zh-CN", {
 				hour: "numeric",
 				minute: "2-digit",
 			})
@@ -198,7 +198,7 @@ export const MessageBubble = memo(function MessageBubble({
 		<time
 			className="shrink-0 whitespace-nowrap text-xs leading-none text-muted-foreground/70"
 			dateTime={messageDate.toISOString()}
-			title={messageDate.toLocaleString()}
+			title={messageDate.toLocaleString("zh-CN")}
 		>
 			{messageTime}
 		</time>
@@ -252,9 +252,9 @@ export const MessageBubble = memo(function MessageBubble({
 					<MessageActions side="end" visible={keepUserActionsVisible}>
 						{onCopyMessage ? (
 							<MessageAction
-								label={wasCopied ? "Copied user message" : "Copy user message"}
+								label={wasCopied ? "已复制用户消息" : "复制用户消息"}
 								onClick={() => void onCopyMessage(message.id, displayContent)}
-								title={wasCopied ? "Copied" : "Copy message"}
+								title={wasCopied ? "已复制" : "复制消息"}
 							>
 								{wasCopied ? (
 									<Check className="h-3.5 w-3.5" />
@@ -266,11 +266,11 @@ export const MessageBubble = memo(function MessageBubble({
 						{onEditMessage && runCount && displayContent.trim() ? (
 							<MessageAction
 								disabled={editDisabled || editPending}
-								label="Edit user message"
+								label="编辑用户消息"
 								onClick={() =>
 									void onEditMessage(message.id, displayContent, runCount)
 								}
-								title="Edit message and restart from this point"
+								title="编辑消息并从此处重新开始"
 							>
 								{editPending ? (
 									<Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -282,11 +282,11 @@ export const MessageBubble = memo(function MessageBubble({
 						{checkpoint ? (
 							<MessageAction
 								disabled={restoreDisabled || restorePending}
-								label="Restore checkpoint"
+								label="恢复检查点"
 								onClick={() =>
 									void onRestoreCheckpoint?.(message.id, checkpoint.runCount)
 								}
-								title="Restore checkpoint"
+								title="恢复检查点"
 							>
 								{restorePending ? (
 									<Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -314,13 +314,9 @@ export const MessageBubble = memo(function MessageBubble({
 				<MessageActions side="start" visible={keepAssistantActionsVisible}>
 					{onCopyMessage ? (
 						<MessageAction
-							label={
-								wasCopied
-									? "Copied assistant message"
-									: "Copy assistant message"
-							}
+							label={wasCopied ? "已复制助手消息" : "复制助手消息"}
 							onClick={() => void onCopyMessage(message.id, message.content)}
-							title={wasCopied ? "Copied" : "Copy raw assistant output"}
+							title={wasCopied ? "已复制" : "复制助手原始输出"}
 						>
 							{wasCopied ? (
 								<Check className="h-3 w-3" />
@@ -332,9 +328,9 @@ export const MessageBubble = memo(function MessageBubble({
 					{onForkSession ? (
 						<MessageAction
 							disabled={forkDisabled || forkPending}
-							label="Fork session"
+							label="复制为新会话"
 							onClick={() => void onForkSession(message.id)}
-							title="Fork session - copy full message history into a new session"
+							title="复制为新会话，保留完整消息记录"
 						>
 							{forkPending ? (
 								<Loader2 className="h-3 w-3 animate-spin" />

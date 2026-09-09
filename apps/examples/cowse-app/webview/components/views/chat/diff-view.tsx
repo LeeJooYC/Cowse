@@ -88,17 +88,17 @@ export function DiffView({ fileDiffs, cwd, onClose }: DiffViewProps) {
 			<div className="flex h-10 shrink-0 items-center justify-between border-b border-border bg-card px-4">
 				<div className="flex items-center gap-3">
 					<span className="text-xs font-medium text-foreground">
-						Uncommitted changes
+						未提交的更改
 					</span>
 					<span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-						Files: {fileDiffs.length}
+						文件： {fileDiffs.length}
 					</span>
 				</div>
 
 				<div className="flex items-center gap-2 text-xs font-mono">
 					{" "}
 					<button
-						aria-label="Close diff view"
+						aria-label="关闭差异视图"
 						className="rounded-md p-1 text-muted-foreground hover:bg-surface-hover hover:text-foreground transition-colors"
 						onClick={onClose}
 						type="button"
@@ -111,7 +111,7 @@ export function DiffView({ fileDiffs, cwd, onClose }: DiffViewProps) {
 			<ScrollArea className="min-h-0 flex-1">
 				{fileDiffs.length === 0 ? (
 					<div className="flex h-full items-center justify-center px-4 py-16 text-sm text-muted-foreground">
-						No file changes in this session yet.
+						此会话暂无文件更改。
 					</div>
 				) : (
 					<div className="flex flex-col">
@@ -164,8 +164,8 @@ function DiffFileSection({
 		} catch {
 			toast({
 				variant: "destructive",
-				title: "Copy failed",
-				description: "The file path could not be copied to the clipboard.",
+				title: "复制失败",
+				description: "无法将文件路径复制到剪贴板。",
 			});
 		}
 	}, [resolvedPath]);
@@ -182,11 +182,11 @@ function DiffFileSection({
 			} catch (error) {
 				toast({
 					variant: "destructive",
-					title: "Could not open file",
+					title: "无法打开文件",
 					description:
 						error instanceof Error
 							? error.message
-							: "The file could not be opened in an editor.",
+							: "无法在编辑器中打开此文件。",
 				});
 			} finally {
 				setOpening(false);
@@ -213,13 +213,13 @@ function DiffFileSection({
 					</span>
 				</button>
 				<button
-					aria-label={`Copy file path for ${file.path}`}
+					aria-label={`复制文件路径：${file.path}`}
 					className={cn(
 						"shrink-0 rounded-md p-1 text-muted-foreground transition-opacity hover:bg-surface-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100",
 						copied ? "opacity-100 text-primary" : "opacity-0",
 					)}
 					onClick={() => void handleCopyPath()}
-					title="Copy file path"
+					title="复制文件路径"
 					type="button"
 				>
 					{copied ? (
@@ -240,17 +240,17 @@ function DiffFileSection({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<button
-							aria-label={`Open ${file.path} in editor`}
+							aria-label={`在编辑器中打开 ${file.path}`}
 							className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-surface-hover hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 data-[state=open]:opacity-100 data-[state=open]:bg-surface-hover data-[state=open]:text-foreground"
 							disabled={opening}
-							title="Open in editor"
+							title="在编辑器中打开"
 							type="button"
 						>
 							<ExternalLink className="h-3.5 w-3.5" />
 						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="w-52">
-						<DropdownMenuLabel>Open in</DropdownMenuLabel>
+						<DropdownMenuLabel>打开方式</DropdownMenuLabel>
 						{editors.map((editor) => (
 							<DropdownMenuItem
 								key={editor.id}
@@ -265,7 +265,7 @@ function DiffFileSection({
 							onSelect={() => void handleOpenInEditor("default")}
 						>
 							<AppWindow aria-hidden />
-							System default
+							系统默认
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -280,9 +280,7 @@ function DiffFileSection({
 			{!collapsed && (
 				<div className="space-y-2 border-t border-border bg-card/40 px-4 py-3">
 					{file.hunks.length === 0 ? (
-						<p className="text-xs text-muted-foreground">
-							No hunk details available.
-						</p>
+						<p className="text-xs text-muted-foreground">暂无更改片段详情。</p>
 					) : (
 						// The index disambiguates repeated same-shaped hunks (e.g.
 						// a file created twice with identical contents); hunks

@@ -82,9 +82,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 					// The account session ended mid-install. Nothing will ever
 					// arrive, so stop polling instead of spinning forever.
 					stop();
-					setConnectError(
-						"Your Cline account session ended. Sign in again to connect GitHub.",
-					);
+					setConnectError("Cline 账户会话已结束，请重新登录后连接 GitHub。");
 					setPhase("connect");
 					return;
 				}
@@ -139,7 +137,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 			await openExternalUrl(url);
 		} catch (error) {
 			const reason = error instanceof Error ? error.message : String(error);
-			setConnectError(`Failed to start the GitHub connection: ${reason}`);
+			setConnectError(`无法开始连接 GitHub：${reason}`);
 			setPhase("connect");
 		}
 	}, []);
@@ -147,7 +145,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 	if (phase === "checking") {
 		return (
 			<output
-				aria-label="Checking GitHub connection"
+				aria-label="正在检查 GitHub 连接"
 				className="flex items-center justify-center py-16"
 			>
 				<Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -158,11 +156,11 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 	return (
 		<>
 			<h1 className="text-2xl font-semibold tracking-tight text-foreground">
-				Connect GitHub
+				连接 GitHub
 			</h1>
 			<p className="mt-2 text-sm text-muted-foreground">
-				Grant Cline access to your GitHub repositories to supercharge it with
-				real-world context. You can always do this later from your dashboard.
+				授权 Cline 访问你的 GitHub
+				仓库，以便利用实际项目内容提供帮助。你也可以稍后在账户控制台完成连接。
 			</p>
 
 			<div className="mt-6 rounded-2xl border border-border/70 bg-background/60 p-4">
@@ -178,10 +176,10 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 									className="bg-primary/15 text-primary"
 									variant="secondary"
 								>
-									Connected
+									已连接
 								</Badge>
 							) : (
-								<Badge variant="secondary">Not connected</Badge>
+								<Badge variant="secondary">未连接</Badge>
 							)}
 						</div>
 					</div>
@@ -191,7 +189,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 							onClick={() => void connect()}
 							type="button"
 						>
-							Connect GitHub
+							连接 GitHub
 						</Button>
 					) : null}
 				</div>
@@ -200,14 +198,14 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 					<div className="mt-3 flex flex-wrap items-center gap-3">
 						<p className="inline-flex items-center gap-2 text-sm text-muted-foreground">
 							<Loader2 className="size-4 animate-spin" />
-							Finish installing the Cline GitHub App in your browser...
+							请在浏览器中完成 Cline GitHub App 的安装…
 						</p>
 						<button
 							className="text-sm text-muted-foreground transition-colors hover:text-foreground"
 							onClick={() => setPhase("connect")}
 							type="button"
 						>
-							Cancel
+							取消
 						</button>
 					</div>
 				) : null}
@@ -221,7 +219,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 				{phase === "connected" ? (
 					<div className="mt-4 border-t border-border/70 pt-3">
 						<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-							Accessible repositories
+							可访问的仓库
 							{repos ? (
 								<span className="ml-2 font-normal normal-case">
 									({repos.length})
@@ -231,7 +229,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 						{repos === null ? (
 							<p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
 								<Loader2 className="size-4 animate-spin" />
-								Loading repositories...
+								正在加载仓库…
 							</p>
 						) : repos.length > 0 ? (
 							<ul className="mt-2 flex max-h-40 flex-col gap-1 overflow-y-auto pr-1">
@@ -256,8 +254,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 							</ul>
 						) : (
 							<p className="mt-2 text-sm text-muted-foreground">
-								No repositories found. You may need to grant access in your
-								GitHub App settings.
+								未找到仓库。你可能需要在 GitHub App 设置中授予访问权限。
 							</p>
 						)}
 					</div>
@@ -271,7 +268,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 						onClick={onContinue}
 						type="button"
 					>
-						Continue
+						继续
 					</Button>
 				) : (
 					<button
@@ -279,7 +276,7 @@ export function GitHubConnectStep({ onContinue }: { onContinue: () => void }) {
 						onClick={onContinue}
 						type="button"
 					>
-						Skip for now
+						暂时跳过
 					</button>
 				)}
 			</div>

@@ -54,9 +54,9 @@ describe("sidebar session organization", () => {
 
 	it("labels chat workspace groups as Chat", () => {
 		const path = "/home/host/.cline/data/workspaces/chat";
-		expect(workspaceDisplayName(path)).toBe("Chat");
+		expect(workspaceDisplayName(path)).toBe("即时会话");
 		expect(groupThreadsByProject([thread("temp", path)])[0]?.label).toBe(
-			"Chat",
+			"即时会话",
 		);
 	});
 
@@ -138,17 +138,24 @@ describe("sidebar session organization", () => {
 			scheduleRunLabel(
 				thread("a", "/ws", { isScheduled: true, scheduleRunNumber: 7 }),
 			),
-		).toBe("Run 7");
+		).toBe("第 7 次运行");
 		const dated = scheduleRunLabel(
 			thread("b", "/ws", {
 				isScheduled: true,
 				startedAt: "2026-08-31T19:31:40.834Z",
 			}),
 		);
-		expect(dated).toMatch(/Aug 31/);
-		expect(dated).not.toBe("Run");
+		expect(dated).toBe(
+			new Date("2026-08-31T19:31:40.834Z").toLocaleString("zh-CN", {
+				month: "short",
+				day: "numeric",
+				hour: "numeric",
+				minute: "2-digit",
+			}),
+		);
+		expect(dated).not.toBe("运行");
 		expect(scheduleRunLabel(thread("c", "/ws", { isScheduled: true }))).toBe(
-			"Run",
+			"运行",
 		);
 	});
 });

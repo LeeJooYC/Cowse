@@ -572,11 +572,9 @@ export function useChatSession() {
 					description,
 				);
 			const content = [
-				description
-					? `The run failed: ${description}`
-					: "The run failed before a response was produced.",
+				description ? `运行失败：${description}` : "此次运行在生成回复前失败。",
 				looksCredentialRelated
-					? "Check your model connection in Settings → Models (or sign in with Cline), then try again."
+					? "请在“设置 → 模型”中检查模型连接（或登录 Cline 账户）后重试。"
 					: "",
 			]
 				.filter(Boolean)
@@ -1920,13 +1918,13 @@ export function useChatSession() {
 				config: validatedConfig,
 			});
 			const id = payload.sessionId;
-			if (!id) throw new Error("Missing session id from server");
+			if (!id) throw new Error("服务端未返回会话 ID");
 			const workspaceRoot =
 				payload.workspaceRoot?.trim() || validatedConfig.workspaceRoot.trim();
 			const cwd =
 				payload.cwd?.trim() || validatedConfig.cwd?.trim() || workspaceRoot;
 			if (!workspaceRoot || !cwd) {
-				throw new Error("Missing resolved workspace from server");
+				throw new Error("服务端未返回解析后的工作区");
 			}
 			setSessionId(id);
 			// Mark idle — not running — so the first sendPrompt is not queued.
@@ -2677,10 +2675,10 @@ export function useChatSession() {
 		async (checkpointRunCount: number) => {
 			const activeSessionId = activeSessionIdRef.current;
 			if (!activeSessionId) {
-				throw new Error("No active session to restore");
+				throw new Error("没有可恢复的活动会话");
 			}
 			if (BUSY_STATUSES.has(status)) {
-				throw new Error("Wait for the current turn to finish before undoing");
+				throw new Error("请等待当前轮次结束后再撤销");
 			}
 
 			clearAbortFallbackTimeout();
@@ -2704,7 +2702,7 @@ export function useChatSession() {
 			const nextSessionId =
 				typeof payload.sessionId === "string" ? payload.sessionId.trim() : "";
 			if (!nextSessionId) {
-				throw new Error("Checkpoint restore did not return a new session id");
+				throw new Error("恢复检查点未返回新会话 ID");
 			}
 
 			const nextMessages = await desktopClient.invoke<ChatMessage[]>(
@@ -2779,7 +2777,7 @@ export function useChatSession() {
 		async (targetSessionId: string, toolCallId?: string) => {
 			const normalizedSessionId = targetSessionId.trim();
 			if (!normalizedSessionId) {
-				throw new Error("No active session.");
+				throw new Error("没有活动会话。");
 			}
 			const response = await desktopClient.invoke<{ detachedCount?: number }>(
 				"proceed_while_running",
@@ -2789,7 +2787,7 @@ export function useChatSession() {
 				},
 			);
 			if ((response.detachedCount ?? 0) < 1) {
-				throw new Error("The command finished before it could be detached.");
+				throw new Error("命令在转入后台前已结束。");
 			}
 		},
 		[],
@@ -3052,10 +3050,10 @@ export function useChatSession() {
 		}> => {
 			const activeSessionId = activeSessionIdRef.current;
 			if (!activeSessionId) {
-				throw new Error("No active session to fork.");
+				throw new Error("没有可复制的活动会话。");
 			}
 			if (BUSY_STATUSES.has(status)) {
-				throw new Error("Wait for the current turn to finish before forking.");
+				throw new Error("请等待当前轮次结束后再复制会话。");
 			}
 			const payload = (await postSession({
 				action: "fork",
@@ -3069,7 +3067,7 @@ export function useChatSession() {
 			const newSessionId =
 				typeof payload.sessionId === "string" ? payload.sessionId.trim() : "";
 			if (!newSessionId) {
-				throw new Error("Fork did not return a new session id.");
+				throw new Error("复制会话未返回新会话 ID。");
 			}
 			const forkedFromSessionId =
 				typeof payload.forkedFromSessionId === "string"

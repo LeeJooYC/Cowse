@@ -41,17 +41,17 @@ export function MarkdownLinkSafetyModal({
 		>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle>Open external link?</AlertDialogTitle>
+					<AlertDialogTitle>打开外部链接？</AlertDialogTitle>
 					<AlertDialogDescription>
-						You are about to leave Cline and visit this address.
+						即将离开牛马并访问以下地址。
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<div className="max-h-32 overflow-y-auto wrap-break-word rounded-md bg-muted p-3 font-mono text-sm">
 					{url}
 				</div>
 				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction onClick={onConfirm}>Open link</AlertDialogAction>
+					<AlertDialogCancel>取消</AlertDialogCancel>
+					<AlertDialogAction onClick={onConfirm}>打开链接</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>
@@ -283,7 +283,7 @@ function MarkdownImage({ alt, height, src, title, width }: MarkdownImageProps) {
 
 	return (
 		<span data-streamdown="blocked-image" role="note">
-			External image blocked for privacy{label ? `: ${label}` : ""}
+			为保护隐私，已阻止加载外部图片{label ? `: ${label}` : ""}
 		</span>
 	);
 }

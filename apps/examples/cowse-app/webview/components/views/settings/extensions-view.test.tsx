@@ -158,7 +158,7 @@ describe("CustomizationSectionView Agent Plugin inventory", () => {
 
 		await vi.waitFor(() => {
 			expect(container.textContent).toContain("agent-plugins-example");
-			expect(container.textContent).toContain("Agent Plugin");
+			expect(container.textContent).toContain("智能体插件");
 		});
 	});
 
@@ -176,7 +176,7 @@ describe("CustomizationSectionView Agent Plugin inventory", () => {
 
 		await vi.waitFor(() => {
 			expect(container.textContent).toContain("example-skill");
-			expect(container.textContent).toContain("Agent Plugin");
+			expect(container.textContent).toContain("智能体插件");
 		});
 	});
 });

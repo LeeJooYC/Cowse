@@ -211,9 +211,7 @@ export function SpeechInput({
 		const handleError = (event: Event) => {
 			setIsListening(false);
 			const speechError = event as SpeechRecognitionErrorEvent;
-			onErrorRef.current?.(
-				errorFromEvent(speechError, "Speech recognition failed"),
-			);
+			onErrorRef.current?.(errorFromEvent(speechError, "语音识别失败"));
 		};
 
 		recognition.addEventListener("start", handleStart);
@@ -324,7 +322,7 @@ export function SpeechInput({
 				for (const track of stream.getTracks()) track.stop();
 				streamRef.current = null;
 				mediaRecorderRef.current = null;
-				onErrorRef.current?.(errorFromEvent(event, "Audio recording failed"));
+				onErrorRef.current?.(errorFromEvent(event, "录音失败"));
 			});
 			recorder.addEventListener("stop", async () => {
 				for (const track of stream.getTracks()) track.stop();
@@ -432,7 +430,7 @@ export function SpeechInput({
 			) : null}
 			<Button
 				{...props}
-				aria-label={isListening ? "Stop recording" : "Record speech"}
+				aria-label={isListening ? "停止录音" : "录制语音"}
 				aria-pressed={isListening}
 				className={cn(
 					"group relative z-10 size-7 rounded-md p-1.5 transition-colors",
@@ -450,11 +448,8 @@ export function SpeechInput({
 				}}
 				title={
 					isListening
-						? "Stop recording"
-						: (title ??
-							(unavailable
-								? "Speech input is not supported in this browser"
-								: "Record speech"))
+						? "停止录音"
+						: (title ?? (unavailable ? "当前浏览器不支持语音输入" : "录制语音"))
 				}
 				type="button"
 			>

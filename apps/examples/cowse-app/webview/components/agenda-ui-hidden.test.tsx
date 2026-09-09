@@ -87,9 +87,7 @@ describe("Agenda UI hidden by default", () => {
 
 		expect(container.querySelector('[aria-label="Show Agenda"]')).toBeNull();
 		expect(container.querySelector('[aria-label="Agenda"]')).toBeNull();
-		expect(
-			container.querySelector('[aria-label="Search sessions"]'),
-		).not.toBeNull();
+		expect(container.querySelector('[aria-label="搜索会话"]')).not.toBeNull();
 		expect(desktopMocks.listAgendaTasks).not.toHaveBeenCalled();
 		expect(desktopMocks.getAgendaAutomationPolicy).not.toHaveBeenCalled();
 	});

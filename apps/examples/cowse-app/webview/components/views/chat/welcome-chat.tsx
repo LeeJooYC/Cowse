@@ -66,7 +66,7 @@ export function WelcomeScreen({
 				label: task.title,
 				description:
 					task.description ||
-					`${task.type === "follow-up" ? "Follow-up" : task.type === "reminder" ? "Reminder" : "Suggestion"} · P${task.priority}`,
+					`${task.type === "follow-up" ? "后续跟进" : task.type === "reminder" ? "提醒" : "建议"} · P${task.priority}`,
 				value: task.instructions,
 			})),
 		[quickActionTasks],
@@ -153,9 +153,7 @@ export function WelcomeScreen({
 
 					<div
 						className={
-							active
-								? "hidden"
-								: "h-full min-h-0 min-w-0 overflow-hidden"
+							active ? "hidden" : "h-full min-h-0 min-w-0 overflow-hidden"
 						}
 						key="conversation-body"
 					>
@@ -165,7 +163,9 @@ export function WelcomeScreen({
 					{active && notice ? notice : null}
 
 					<div
-						className={active ? "mt-4 w-full" : "z-20 min-w-0 shrink-0 px-6 pb-6"}
+						className={
+							active ? "mt-4 w-full" : "z-20 min-w-0 shrink-0 px-6 pb-6"
+						}
 						key="persistent-composer"
 					>
 						{active ? composer : <SessionContent>{composer}</SessionContent>}
@@ -190,7 +190,7 @@ export function WelcomeScreen({
 								}}
 							/>
 							<AgendaTaskReviewDialog
-								confirmLabel="Approve and start"
+								confirmLabel="批准并开始"
 								onConfirm={async (task) => {
 									await handleTaskAction(task);
 									setReviewTask(null);

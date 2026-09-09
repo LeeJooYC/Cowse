@@ -435,7 +435,7 @@ export function AccountView({
 	};
 
 	const formatTime = (dateStr: string) => {
-		return new Date(dateStr).toLocaleTimeString("en-US", {
+		return new Date(dateStr).toLocaleTimeString("zh-CN", {
 			hour: "numeric",
 			minute: "2-digit",
 		});

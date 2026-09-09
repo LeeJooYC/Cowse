@@ -308,7 +308,7 @@ function ChatMessagesImpl({
 				await Promise.resolve(fn(requestId));
 			} catch (err) {
 				const message =
-					err instanceof Error ? err.message : "Could not submit decision.";
+					err instanceof Error ? err.message : "无法提交审批结果。";
 				setToolApprovalErrors((prev) => ({ ...prev, [requestId]: message }));
 			} finally {
 				setToolApprovalActions((prev) => {
@@ -336,8 +336,7 @@ function ChatMessagesImpl({
 			try {
 				await Promise.resolve(onAnswerAskQuestion(requestId, answer));
 			} catch (err) {
-				const message =
-					err instanceof Error ? err.message : "Could not submit answer.";
+				const message = err instanceof Error ? err.message : "无法提交回答。";
 				setAskQuestionErrors((prev) => ({ ...prev, [requestId]: message }));
 			} finally {
 				setAskQuestionActions((prev) => {
@@ -364,8 +363,8 @@ function ChatMessagesImpl({
 			} catch {
 				toast({
 					variant: "destructive",
-					title: "Copy failed",
-					description: "The message could not be copied to the clipboard.",
+					title: "复制失败",
+					description: "无法将消息复制到剪贴板。",
 				});
 			}
 		},
@@ -389,8 +388,7 @@ function ChatMessagesImpl({
 			try {
 				await Promise.resolve(onRestoreCheckpoint(runCount));
 			} catch (err) {
-				const message =
-					err instanceof Error ? err.message : "Could not restore checkpoint.";
+				const message = err instanceof Error ? err.message : "无法恢复检查点。";
 				setCheckpointErrors((prev) => ({ ...prev, [messageId]: message }));
 			} finally {
 				setCheckpointActions((prev) => {
@@ -424,9 +422,7 @@ function ChatMessagesImpl({
 				await Promise.resolve(onEditMessage(messageId, content, runCount));
 			} catch (err) {
 				const message =
-					err instanceof Error
-						? err.message
-						: "Could not restart from this message.";
+					err instanceof Error ? err.message : "无法从这条消息重新开始。";
 				setEditErrors((prev) => ({ ...prev, [messageId]: message }));
 			} finally {
 				setEditingMessageId((current) =>
@@ -500,7 +496,7 @@ function ChatMessagesImpl({
 				await Promise.resolve(onForkSession());
 			} catch (err) {
 				const message =
-					err instanceof Error ? err.message : "Could not fork session.";
+					err instanceof Error ? err.message : "无法复制为新会话。";
 				setForkErrors((prev) => ({ ...prev, [messageId]: message }));
 			} finally {
 				setForkingMessageId((current) =>
@@ -517,7 +513,7 @@ function ChatMessagesImpl({
 			key={sessionId ?? "new-chat"}
 		>
 			<ConversationViewport
-				aria-label="Agent conversation"
+				aria-label="智能体会话"
 				className="h-full min-h-0 min-w-0"
 			>
 				<ConversationContent
@@ -726,14 +722,14 @@ function ChatMessagesImpl({
 								<div className="pointer-events-none absolute right-6 top-6 z-20 rounded-full border border-border/70 bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur-[1px]">
 									<div className="flex items-center gap-1.5">
 										<Loader2 className="h-3.5 w-3.5 animate-spin" />
-										Switching session...
+										正在切换会话…
 									</div>
 								</div>
 							) : (
 								<div className="rounded-xl border border-border/70 bg-card p-4">
 									<div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
 										<Loader2 className="h-4 w-4 animate-spin" />
-										Loading session...
+										正在加载会话…
 									</div>
 									<div className="space-y-3">
 										<div className="h-4 w-2/5 animate-pulse rounded bg-muted/70" />
@@ -747,10 +743,10 @@ function ChatMessagesImpl({
 							<div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
 								<Loader2 className="h-3.5 w-3.5 animate-spin" />
 								{chatTransportState === "reconnecting"
-									? "Reconnecting chat..."
+									? "正在重新连接会话…"
 									: chatTransportState === "unavailable"
-										? "Chat backend unavailable"
-										: "Connecting chat..."}
+										? "会话后台不可用"
+										: "正在连接会话…"}
 							</div>
 						) : null}
 						{shouldShowErrorBanner ? (
@@ -779,14 +775,13 @@ function ChatMessagesImpl({
 			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Revert to this checkpoint?</AlertDialogTitle>
+						<AlertDialogTitle>恢复到此检查点？</AlertDialogTitle>
 						<AlertDialogDescription>
-							Workspace files and conversation history after this point will be
-							discarded. This cannot be undone.
+							此检查点之后的工作区文件更改和会话记录将被丢弃。此操作无法撤销。
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>取消</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => {
@@ -800,7 +795,7 @@ function ChatMessagesImpl({
 								}
 							}}
 						>
-							Revert
+							恢复
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
@@ -815,15 +810,13 @@ function ChatMessagesImpl({
 			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Edit and restart from here?</AlertDialogTitle>
+						<AlertDialogTitle>编辑并从这里重新开始？</AlertDialogTitle>
 						<AlertDialogDescription>
-							This creates a new session and restores the workspace to its
-							checkpoint before placing this message in the composer. Workspace
-							and conversation changes after this point will be discarded.
+							这将创建新会话，将工作区恢复到对应检查点，并将此消息放入输入框。此检查点之后的工作区更改和会话内容将被丢弃。
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel>取消</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => {
@@ -838,7 +831,7 @@ function ChatMessagesImpl({
 								}
 							}}
 						>
-							Continue
+							继续
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

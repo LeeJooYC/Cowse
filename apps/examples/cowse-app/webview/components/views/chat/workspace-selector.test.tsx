@@ -180,17 +180,15 @@ describe("WorkspaceSelector", () => {
 		// that must never leak into the chip for a plain folder.
 		expect(trigger?.textContent).not.toContain("no-git");
 		expect(trigger?.textContent).not.toContain("/home");
-		expect(trigger?.getAttribute("aria-label")).toBe("Folder recipes");
+		expect(trigger?.getAttribute("aria-label")).toBe("文件夹 recipes");
 
 		await click(trigger as Element);
 		await vi.waitFor(() => {
 			expect(container.textContent).toContain("工作目录");
 		});
-		expect(container.textContent).not.toContain("Branches");
-		expect(container.textContent).not.toContain(
-			"Create and checkout new branch",
-		);
-		expect(container.textContent).not.toContain("No branches found");
+		expect(container.textContent).not.toContain("分支");
+		expect(container.textContent).not.toContain("创建并切换到新分支");
+		expect(container.textContent).not.toContain("未找到分支");
 		expect(container.textContent).toContain("打开文件夹…");
 		expect(
 			container.querySelector('input[placeholder="搜索工作目录"]'),
@@ -223,10 +221,10 @@ describe("WorkspaceSelector", () => {
 
 		await click(trigger as Element);
 		await vi.waitFor(() => {
-			expect(container.textContent).toContain("Branches");
+			expect(container.textContent).toContain("分支");
 		});
 		expect(container.textContent).toContain("feature/review");
-		expect(container.textContent).toContain("Create and checkout new branch");
+		expect(container.textContent).toContain("创建并切换到新分支");
 	});
 
 	it("labels the SDK chat workspace as Chat without listing the raw path", async () => {

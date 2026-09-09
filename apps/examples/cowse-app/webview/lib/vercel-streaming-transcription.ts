@@ -43,7 +43,7 @@ function errorMessage(error: unknown): string {
 			// Fall through to the generic message.
 		}
 	}
-	return typeof error === "string" ? error : "Streaming transcription failed";
+	return typeof error === "string" ? error : "流式语音转文字失败";
 }
 
 function floatsToPcm16(samples: Float32Array): Uint8Array {
@@ -208,11 +208,11 @@ export async function startVercelStreamingTranscription(options: {
 		socket.binaryType = "arraybuffer";
 		await new Promise<void>((resolve, reject) => {
 			if (!socket) {
-				reject(new Error("Streaming transcription socket was not created"));
+				reject(new Error("未创建流式语音转文字连接"));
 				return;
 			}
 			const connectionTimeout = window.setTimeout(
-				() => reject(new Error("Streaming transcription connection timed out")),
+				() => reject(new Error("流式语音转文字连接超时")),
 				15_000,
 			);
 			socket.onopen = () => {
@@ -221,7 +221,7 @@ export async function startVercelStreamingTranscription(options: {
 			};
 			socket.onerror = () => {
 				window.clearTimeout(connectionTimeout);
-				reject(new Error("Unable to connect to streaming transcription"));
+				reject(new Error("无法连接流式语音转文字服务"));
 			};
 		});
 		socket.send(
@@ -275,15 +275,11 @@ export async function startVercelStreamingTranscription(options: {
 			}
 		};
 		socket.onerror = () => {
-			fail(new Error("Streaming transcription connection failed"));
+			fail(new Error("流式语音转文字连接失败"));
 		};
 		socket.onclose = () => {
 			if (!finished) {
-				fail(
-					new Error(
-						"Streaming transcription ended before a final transcript was received",
-					),
-				);
+				fail(new Error("流式语音转文字在返回最终文本前结束"));
 			}
 		};
 		writeDesktopDebugLog({
@@ -310,10 +306,10 @@ export async function startVercelStreamingTranscription(options: {
 					JSON.stringify({ type: "transcription-stream.audio-done" }),
 				);
 				finishTimeout = setTimeout(() => {
-					fail(new Error("Streaming transcription timed out while finalizing"));
+					fail(new Error("流式语音转文字生成最终文本时超时"));
 				}, STREAM_FINISH_TIMEOUT_MS);
 			} else {
-				fail(new Error("Streaming transcription connection is not open"));
+				fail(new Error("流式语音转文字连接尚未建立"));
 			}
 		},
 		cancel() {

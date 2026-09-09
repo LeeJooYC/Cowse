@@ -375,7 +375,7 @@ describe("describeAgentActivity", () => {
 				total: 1,
 				running: 1,
 			}),
-		).toBe("1 agent: 1 running");
+		).toBe("1 个智能体：1 个运行中");
 	});
 
 	it("lists every non-empty bucket", () => {
@@ -388,7 +388,7 @@ describe("describeAgentActivity", () => {
 				cancelled: 1,
 				unresolved: 0,
 			}),
-		).toBe("5 agents: 1 running, 2 completed, 1 failed, 1 cancelled");
+		).toBe("5 个智能体：1 个运行中，2 个已完成，1 个失败，1 个已取消");
 	});
 
 	it("describes runs with no recorded outcome", () => {
@@ -399,7 +399,7 @@ describe("describeAgentActivity", () => {
 				completed: 1,
 				unresolved: 1,
 			}),
-		).toBe("2 agents: 1 completed, 1 with no recorded outcome");
+		).toBe("2 个智能体：1 个已完成，1 个未记录结果");
 	});
 });
 

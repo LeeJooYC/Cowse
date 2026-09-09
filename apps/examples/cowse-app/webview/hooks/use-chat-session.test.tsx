@@ -2417,7 +2417,7 @@ describe("useChatSession", () => {
 			(message) => message.role === "error",
 		);
 		expect(errorMessages).toHaveLength(1);
-		expect(errorMessages[0]?.content).toContain("The run failed");
+		expect(errorMessages[0]?.content).toContain("此次运行在生成回复前失败");
 		// The optimistic user message and the queued materialization of the
 		// same prompt must not duplicate each other.
 		const userMessages = current.messages.filter(
@@ -2479,7 +2479,7 @@ describe("useChatSession", () => {
 			(message) => message.role === "error",
 		);
 		expect(errorMessage?.content).toContain("Unauthorized: invalid API key");
-		expect(errorMessage?.content).toContain("Settings");
+		expect(errorMessage?.content).toContain("设置");
 	});
 
 	it("never attributes an earlier turn's core error to a later detail-less failure", async () => {
@@ -2548,9 +2548,7 @@ describe("useChatSession", () => {
 		const errorMessage = current.messages.find(
 			(message) => message.role === "error",
 		);
-		expect(errorMessage?.content).toContain(
-			"The run failed before a response was produced.",
-		);
+		expect(errorMessage?.content).toContain("此次运行在生成回复前失败。");
 		expect(errorMessage?.content).not.toContain("Unauthorized");
 	});
 
@@ -2636,7 +2634,7 @@ describe("useChatSession", () => {
 			(message) => message.role === "error",
 		);
 		expect(errorMessages).toHaveLength(1);
-		expect(errorMessages[0]?.content).toContain("The run failed");
+		expect(errorMessages[0]?.content).toContain("此次运行在生成回复前失败");
 	});
 
 	it("does not give credential guidance for non-credential failures", async () => {

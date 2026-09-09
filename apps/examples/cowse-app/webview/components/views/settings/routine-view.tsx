@@ -210,7 +210,7 @@ function formatDateTime(value?: DateTimeValue | null): string {
 			return "-";
 		}
 		const parsed = new Date(value);
-		return Number.isNaN(parsed.getTime()) ? "-" : parsed.toLocaleString();
+		return Number.isNaN(parsed.getTime()) ? "-" : parsed.toLocaleString("zh-CN");
 	}
 	const trimmed = value.trim();
 	if (trimmed.length === 0) {
@@ -220,7 +220,7 @@ function formatDateTime(value?: DateTimeValue | null): string {
 	if (Number.isNaN(parsed.getTime())) {
 		return trimmed;
 	}
-	return parsed.toLocaleString();
+	return parsed.toLocaleString("zh-CN");
 }
 
 function formatScheduleModel(schedule: RoutineSchedule): string {
@@ -320,7 +320,7 @@ function formatScheduleTime(hour: string, minute: string): string {
 		0,
 		0,
 	);
-	return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+	return date.toLocaleTimeString("zh-CN", { hour: "numeric", minute: "2-digit" });
 }
 
 function formatLocalDateInput(date: Date): string {
