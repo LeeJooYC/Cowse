@@ -191,9 +191,9 @@ describe("OnboardingView", () => {
 		// The welcome step layers the standalone bot over a separate interactive
 		// full-bleed grid. These data attributes protect that visual composition
 		// without coupling the test to generated SVG markup.
-		expect(container.textContent).toContain("Build software your way");
+		expect(container.textContent).toContain("你的本地工作助手");
 		const welcomeBot = container.querySelector(
-			'[data-welcome-hero-variant="bot-only"]',
+			'[data-onboarding-content] [data-welcome-hero]',
 		);
 		expect(welcomeBot).not.toBeNull();
 		expect(
@@ -211,12 +211,12 @@ describe("OnboardingView", () => {
 		);
 
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 
 		// Cline is selected by default. The inactive API-key card is inert so its
 		// controls cannot receive pointer or keyboard input through the overlay.
-		expect(container.textContent).toContain("Set up Cline");
+		expect(container.textContent).toContain("设置牛马");
 		const clineOption = container.querySelector(
 			'[data-onboarding-option="cline"]',
 		);
@@ -225,7 +225,7 @@ describe("OnboardingView", () => {
 		);
 		const recommendedBadge = Array.from(
 			container.querySelectorAll<HTMLElement>('[data-slot="badge"]'),
-		).find((badge) => badge.textContent === "Recommended");
+		).find((badge) => badge.textContent === "推荐");
 		expect(clineOption?.getAttribute("data-selected")).toBe("true");
 		expect(apiKeyOption?.getAttribute("data-selected")).toBe("false");
 		expect(recommendedBadge).not.toBeNull();
@@ -266,7 +266,7 @@ describe("OnboardingView", () => {
 	it("moves the accent selected state to the chosen setup option", async () => {
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 
 		const clineOption = container.querySelector(
@@ -279,7 +279,7 @@ describe("OnboardingView", () => {
 			"[data-onboarding-api-key-form]",
 		);
 		const apiKeyCardAction = container.querySelector<HTMLButtonElement>(
-			'button[aria-label="Use your own API key"]',
+			'button[aria-label="使用自己的 API 密钥"]',
 		);
 
 		expect(apiKeyCardAction).not.toBeNull();
@@ -302,13 +302,13 @@ describe("OnboardingView", () => {
 				?.hasAttribute("inert"),
 		).toBe(false);
 		expect(apiKeyForm?.getAttribute("aria-hidden")).toBe("false");
-		expect(document.activeElement?.getAttribute("aria-label")).toBe("Provider");
+		expect(document.activeElement?.getAttribute("aria-label")).toBe("供应商");
 		expect(
-			container.querySelector('button[aria-label="Use your own API key"]'),
+			container.querySelector('button[aria-label="使用自己的 API 密钥"]'),
 		).toBeNull();
 
 		const clineCardAction = container.querySelector<HTMLButtonElement>(
-			'button[aria-label="Sign in with Cline"]',
+			'button[aria-label="使用 Cline 账号登录"]',
 		);
 		expect(clineCardAction).not.toBeNull();
 		await act(async () => {
@@ -319,21 +319,21 @@ describe("OnboardingView", () => {
 		expect(clineOption?.getAttribute("data-selected")).toBe("true");
 		expect(apiKeyOption?.getAttribute("data-selected")).toBe("false");
 		expect(apiKeyForm?.getAttribute("aria-hidden")).toBe("true");
-		expect(document.activeElement?.textContent?.trim()).toBe("Sign in");
+		expect(document.activeElement?.textContent?.trim()).toBe("登录");
 		expect(
-			container.querySelector('button[aria-label="Use your own API key"]'),
+			container.querySelector('button[aria-label="使用自己的 API 密钥"]'),
 		).not.toBeNull();
 	});
 
-	it("keeps the Cline API key form chevron static while toggling the panel", async () => {
+	it("keeps the Cline API 密钥 form chevron static while toggling the panel", async () => {
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 
 		// The design uses the chevron as a disclosure affordance without rotating
 		// it; aria-expanded and panel visibility carry the actual state.
-		const trigger = buttonByText("Use a Cline API key");
+		const trigger = buttonByText("使用 Cline API 密钥");
 		const chevron = trigger.querySelector("svg");
 		const chevronClassName = chevron?.getAttribute("class");
 		const panel = container.querySelector("#onboarding-cline-key-form");
@@ -365,10 +365,10 @@ describe("OnboardingView", () => {
 	it("completes without connecting when skipped", async () => {
 		const onComplete = await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 		await act(async () => {
-			buttonByText("Skip").click();
+			buttonByText("跳过").click();
 		});
 		expect(onComplete).toHaveBeenCalledTimes(1);
 	});
@@ -393,12 +393,12 @@ describe("OnboardingView", () => {
 		});
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
-		expect(container.textContent).toContain("Signed in as");
+		expect(container.textContent).toContain("当前登录账号：");
 
 		await act(async () => {
-			buttonByText("Continue").click();
+			buttonByText("继续").click();
 		});
 		// Connecting a Cline account routes through the GitHub integration step.
 		expect(container.textContent).toContain("Connect GitHub");
@@ -407,7 +407,7 @@ describe("OnboardingView", () => {
 		});
 		// The redesigned completion step places transparent content over a static,
 		// wide version of the hero grid.
-		expect(container.textContent).toContain("You're all set");
+		expect(container.textContent).toContain("设置完成");
 		const doneGrid = container.querySelector<HTMLElement>(
 			'[data-welcome-hero-variant="grid-only"]',
 		);
@@ -441,13 +441,13 @@ describe("OnboardingView", () => {
 		});
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 		await act(async () => {
-			buttonByText("Continue").click();
+			buttonByText("继续").click();
 		});
 		expect(container.textContent).not.toContain("Connect GitHub");
-		expect(container.textContent).toContain("You're all set");
+		expect(container.textContent).toContain("设置完成");
 	});
 
 	it("bypasses the GitHub step when the rollout flag is off", async () => {
@@ -464,20 +464,20 @@ describe("OnboardingView", () => {
 		});
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 		await act(async () => {
-			buttonByText("Continue").click();
+			buttonByText("继续").click();
 		});
 		expect(invoke).toHaveBeenCalledWith("get_feature_flags");
 		expect(container.textContent).not.toContain("Connect GitHub");
-		expect(container.textContent).toContain("You're all set");
+		expect(container.textContent).toContain("设置完成");
 	});
 
 	it("lets the user cancel a pending browser sign-in", async () => {
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 
 		// OAuth login that never resolves (browser round-trip abandoned).
@@ -494,15 +494,15 @@ describe("OnboardingView", () => {
 			return {};
 		});
 		await act(async () => {
-			buttonByText("Sign in").click();
+			buttonByText("登录").click();
 		});
-		expect(container.textContent).toContain("Waiting for browser...");
+		expect(container.textContent).toContain("等待浏览器确认…");
 
 		await act(async () => {
-			buttonByText("Cancel").click();
+			buttonByText("取消").click();
 		});
-		expect(container.textContent).not.toContain("Waiting for browser...");
-		expect(buttonByText("Sign in")).toBeDefined();
+		expect(container.textContent).not.toContain("等待浏览器确认…");
+		expect(buttonByText("登录")).toBeDefined();
 		// Cancelling must also stop the backend browser round-trip so a
 		// later-completed authorization can never persist credentials.
 		expect(invoke).toHaveBeenCalledWith("cancel_provider_oauth_login", {
@@ -510,17 +510,17 @@ describe("OnboardingView", () => {
 		});
 	});
 
-	it("connects with a Cline API key when OAuth sign-in is not used", async () => {
+	it("connects with a Cline API 密钥 when OAuth sign-in is not used", async () => {
 		const onComplete = await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 
 		await act(async () => {
-			buttonByText("Use a Cline API key").click();
+			buttonByText("使用 Cline API 密钥").click();
 		});
 		const keyInput = container.querySelector<HTMLInputElement>(
-			'input[aria-label="Cline API key"]',
+			'input[aria-label="Cline API 密钥"]',
 		);
 		expect(keyInput).not.toBeNull();
 
@@ -544,7 +544,7 @@ describe("OnboardingView", () => {
 			keyInput?.dispatchEvent(new Event("input", { bubbles: true }));
 		});
 		await act(async () => {
-			buttonByText("Connect").click();
+			buttonByText("连接").click();
 		});
 
 		expect(invoke).toHaveBeenCalledWith("save_provider_settings", {
@@ -556,8 +556,8 @@ describe("OnboardingView", () => {
 		await act(async () => {
 			buttonByText("Skip for now").click();
 		});
-		expect(container.textContent).toContain("You're all set");
-		expect(container.textContent).toContain("Your Cline account is connected");
+		expect(container.textContent).toContain("设置完成");
+		expect(container.textContent).toContain("已连接你的 Cline 账号");
 		expect(
 			parseModelSelectionStorage(
 				window.localStorage.getItem(MODEL_SELECTION_STORAGE_KEY),
@@ -565,21 +565,21 @@ describe("OnboardingView", () => {
 		).toBe("cline");
 
 		await act(async () => {
-			buttonByText("Start building").click();
+			buttonByText("开始使用").click();
 		});
 		expect(onComplete).toHaveBeenCalledTimes(1);
 	});
 
-	it("rejects an invalid Cline API key and rolls back the saved key", async () => {
+	it("rejects an invalid Cline API 密钥 and rolls back the saved key", async () => {
 		await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 		await act(async () => {
-			buttonByText("Use a Cline API key").click();
+			buttonByText("使用 Cline API 密钥").click();
 		});
 		const keyInput = container.querySelector<HTMLInputElement>(
-			'input[aria-label="Cline API key"]',
+			'input[aria-label="Cline API 密钥"]',
 		);
 
 		const savedKeys: Array<string | undefined> = [];
@@ -606,12 +606,12 @@ describe("OnboardingView", () => {
 			keyInput?.dispatchEvent(new Event("input", { bubbles: true }));
 		});
 		await act(async () => {
-			buttonByText("Connect").click();
+			buttonByText("连接").click();
 		});
 
 		// Stays on the connect step with an error instead of advancing.
-		expect(container.textContent).not.toContain("You're all set");
-		expect(container.textContent).toContain("Failed to save API key");
+		expect(container.textContent).not.toContain("设置完成");
+		expect(container.textContent).toContain("保存 API 密钥失败");
 		expect(container.textContent).toContain("could not be verified");
 		// The rejected key was persisted for verification, then rolled back.
 		expect(savedKeys).toEqual(["bad_key", ""]);
@@ -620,25 +620,25 @@ describe("OnboardingView", () => {
 	it("keeps Cline sign-in available while API-key setup is expanded", async () => {
 		const onComplete = await render();
 		await act(async () => {
-			buttonByText("Get started").click();
+			buttonByText("开始设置").click();
 		});
 		// Expand the bring-your-own-key form; drive state through the select's
 		// props via the API key path (jsdom cannot open the radix listbox).
 		const expandButton = container.querySelector<HTMLButtonElement>(
-			'button[aria-label="Use your own API key"]',
+			'button[aria-label="使用自己的 API 密钥"]',
 		);
 		expect(expandButton).toBeDefined();
 		await act(async () => {
 			expandButton?.click();
 		});
-		expect(container.textContent).toContain("Choose a provider");
+		expect(container.textContent).toContain("选择供应商");
 
 		// Expanding bring-your-own-key changes the selected card, but the user can
 		// still switch back and finish through the Cline OAuth path.
 		await act(async () => {
 			container
 				.querySelector<HTMLButtonElement>(
-					'button[aria-label="Sign in with Cline"]',
+					'button[aria-label="使用 Cline 账号登录"]',
 				)
 				?.click();
 		});
@@ -652,7 +652,7 @@ describe("OnboardingView", () => {
 			return {};
 		});
 		await act(async () => {
-			buttonByText("Sign in").click();
+			buttonByText("登录").click();
 		});
 		expect(invoke).toHaveBeenCalledWith("run_provider_oauth_login", {
 			provider: "cline",
@@ -661,7 +661,7 @@ describe("OnboardingView", () => {
 		await act(async () => {
 			buttonByText("Skip for now").click();
 		});
-		expect(container.textContent).toContain("You're all set");
+		expect(container.textContent).toContain("设置完成");
 		expect(
 			parseModelSelectionStorage(
 				window.localStorage.getItem(MODEL_SELECTION_STORAGE_KEY),
@@ -669,7 +669,7 @@ describe("OnboardingView", () => {
 		).toBe("cline");
 
 		await act(async () => {
-			buttonByText("Start building").click();
+			buttonByText("开始使用").click();
 		});
 		expect(onComplete).toHaveBeenCalledTimes(1);
 	});

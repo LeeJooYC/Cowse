@@ -524,7 +524,7 @@ function ConnectStep({
 		<OnboardingContent surface="panel">
 			<div className="flex flex-col">
 				<IconButton
-					aria-label="Back"
+					aria-label="返回"
 					className="-ml-2"
 					onClick={onBack}
 					size="md"
@@ -546,7 +546,7 @@ function ConnectStep({
 				<SetupOptionCard
 					id="cline"
 					onSelect={() => setSelectedMethod("cline")}
-					selectLabel="Sign in with Cline"
+					selectLabel="使用 Cline 账号登录"
 					selected={selectedMethod === "cline"}
 				>
 					<SetupOptionHeader
@@ -555,17 +555,17 @@ function ConnectStep({
 								className="-mt-2 rounded-sm border-primary/30 bg-primary/10 px-1.5 !pt-[0.3rem] !pb-[0.2rem] text-primary-emphasis"
 								variant="outline"
 							>
-								Recommended
+								推荐
 							</Badge>
 						}
-						description="Latest models with regular free promos. No API keys needed."
+						description="使用最新模型，定期享受免费活动，无需 API 密钥。"
 						icon={<ClineLogo className="size-5" />}
-						title="Sign in with Cline"
+						title="使用 Cline 账号登录"
 					/>
 					{user ? (
 						<div className="mt-6 flex flex-wrap items-center justify-end gap-6">
 							<p className="text-sm text-muted-foreground">
-								Signed in as{" "}
+								当前登录账号：{" "}
 								<span className="font-medium">
 									{user.displayName || user.email}
 								</span>
@@ -580,7 +580,7 @@ function ConnectStep({
 								type="button"
 								variant="fill"
 							>
-								Continue
+								继续
 							</Button>
 						</div>
 					) : (
@@ -594,7 +594,7 @@ function ConnectStep({
 								variant="fill"
 							>
 								{signingIn && <Loader2 className="size-4 animate-spin" />}
-								{signingIn ? "Waiting for browser..." : "Sign in"}
+								{signingIn ? "等待浏览器确认…" : "登录"}
 							</Button>
 							{signingIn ? (
 								<Button
@@ -604,7 +604,7 @@ function ConnectStep({
 									type="button"
 									variant="ghost"
 								>
-									Cancel
+									取消
 								</Button>
 							) : (
 								<Button
@@ -614,14 +614,14 @@ function ConnectStep({
 									type="button"
 									variant="ghost"
 								>
-									Sign up
+									注册
 								</Button>
 							)}
 						</div>
 					)}
 					{!user && signingIn && deviceUserCode ? (
 						<p className="mt-4 ml-12 text-sm text-muted-foreground max-[720px]:ml-0">
-							Confirm this code in your browser:{" "}
+							请在浏览器中确认此验证码：{" "}
 							<span className="font-mono font-medium text-foreground">
 								{deviceUserCode}
 							</span>
@@ -632,7 +632,7 @@ function ConnectStep({
 							className="mt-6 ml-12 text-xs text-destructive max-[720px]:ml-0"
 							role="alert"
 						>
-							Sign in failed: {signInError}
+							登录失败： {signInError}
 						</p>
 					) : null}
 					{!user ? (
@@ -650,7 +650,7 @@ function ConnectStep({
 								type="button"
 								variant="ghost"
 							>
-								Use a Cline API key
+								使用 Cline API 密钥
 								<ChevronDown aria-hidden="true" className="size-3.5" />
 							</Button>
 							<ExpandablePanel
@@ -661,7 +661,7 @@ function ConnectStep({
 								<div className="flex flex-col gap-2 pt-3 ml-2 max-[720px]:ml-0">
 									<div className="flex flex-wrap items-center gap-2">
 										<Input
-											aria-label="Cline API key"
+											aria-label="Cline API 密钥"
 											autoComplete="off"
 											className="min-w-52 flex-1 bg-background"
 											disabled={clineKeySaving}
@@ -678,7 +678,7 @@ function ConnectStep({
 													void connectWithClineApiKey();
 												}
 											}}
-											placeholder="Cline API key"
+											placeholder="Cline API 密钥"
 											type="password"
 											value={clineApiKey}
 										/>
@@ -693,7 +693,7 @@ function ConnectStep({
 											{clineKeySaving ? (
 												<Loader2 className="size-4 animate-spin" />
 											) : null}
-											{clineKeySaving ? "Connecting..." : "Connect"}
+											{clineKeySaving ? "正在连接…" : "连接"}
 										</Button>
 									</div>
 									<Button
@@ -705,12 +705,12 @@ function ConnectStep({
 										type="button"
 										variant="ghost"
 									>
-										Find your key
+										获取密钥
 										<ExternalLink className="size-3" />
 									</Button>
 									{clineKeyError ? (
 										<p className="text-xs text-destructive" role="alert">
-											Failed to save API key: {clineKeyError}
+											保存 API 密钥失败: {clineKeyError}
 										</p>
 									) : null}
 								</div>
@@ -724,13 +724,13 @@ function ConnectStep({
 						setSelectedMethod("api-key");
 						setClineKeyFormExpanded(false);
 					}}
-					selectLabel="Use your own API key"
+					selectLabel="使用自己的 API 密钥"
 					selected={selectedMethod === "api-key"}
 				>
 					<SetupOptionHeader
-						description="Anthropic, OpenAI, OpenRouter, and more."
+						description="支持 Anthropic、OpenAI、OpenRouter 等供应商。"
 						icon={<KeyRound className="size-4" />}
-						title="Use your own API key"
+						title="使用自己的 API 密钥"
 					/>
 					<ExpandablePanel
 						data-onboarding-api-key-form
@@ -739,7 +739,7 @@ function ConnectStep({
 						<div className="flex flex-col gap-3 pt-6">
 							{providersError ? (
 								<p className="text-xs text-destructive" role="alert">
-									Failed to load providers: {providersError}
+									加载供应商失败： {providersError}
 								</p>
 							) : (
 								<Select
@@ -751,14 +751,14 @@ function ConnectStep({
 									value={selectedProviderId || undefined}
 								>
 									<SelectTrigger
-										aria-label="Provider"
+										aria-label="供应商"
 										className="w-full bg-background"
 									>
 										<SelectValue
 											placeholder={
 												providersLoading
-													? "Loading providers..."
-													: "Choose a provider"
+													? "正在加载供应商…"
+													: "选择供应商"
 											}
 										/>
 									</SelectTrigger>
@@ -772,7 +772,7 @@ function ConnectStep({
 								</Select>
 							)}
 							<Input
-								aria-label="API key"
+								aria-label="API 密钥"
 								autoComplete="off"
 								className="bg-background"
 								disabled={saving}
@@ -782,8 +782,8 @@ function ConnectStep({
 								}}
 								placeholder={
 									selectedProvider
-										? `${selectedProvider.name} API key`
-										: "API key"
+										? `${selectedProvider.name} API 密钥`
+										: "API 密钥"
 								}
 								type="password"
 								value={apiKey}
@@ -799,8 +799,7 @@ function ConnectStep({
 										type="button"
 										variant="ghost"
 									>
-										{selectedProvider.docLabel ||
-											`Get a ${selectedProvider.name} API key`}
+										{`获取 ${selectedProvider.name} API 密钥`}
 										<ExternalLink className="size-3.5" />
 									</Button>
 								) : null}
@@ -813,12 +812,12 @@ function ConnectStep({
 									variant="fill"
 								>
 									{saving ? <Loader2 className="size-4 animate-spin" /> : null}
-									{saving ? "Connecting..." : "Connect"}
+									{saving ? "正在连接…" : "连接"}
 								</Button>
 							</div>
 							{saveError ? (
 								<p className="text-xs text-destructive" role="alert">
-									Failed to save provider: {saveError}
+									保存供应商失败： {saveError}
 								</p>
 							) : null}
 						</div>
@@ -834,7 +833,7 @@ function ConnectStep({
 					type="button"
 					variant="ghost"
 				>
-					Skip
+					跳过
 				</Button>
 			</div>
 		</OnboardingContent>
@@ -914,7 +913,7 @@ function ImportHistoryStep({
 						className="size-6 animate-spin text-muted-foreground"
 					/>
 					<p className="mt-4 text-md text-muted-foreground">
-						Checking for session history from other tools…
+						正在检查其他工具的会话历史…
 					</p>
 					<Button
 						className="mt-8"
@@ -923,7 +922,7 @@ function ImportHistoryStep({
 						type="button"
 						variant="ghost"
 					>
-						Skip
+						跳过
 					</Button>
 				</div>
 			</OnboardingContent>
@@ -932,19 +931,19 @@ function ImportHistoryStep({
 
 	const toolList = found.tools
 		.map((tool) => SESSION_IMPORT_TOOL_LABELS[tool])
-		.join(found.tools.length === 2 ? " and " : ", ");
+		.join(found.tools.length === 2 ? " 和 " : "、");
 
 	return (
 		<OnboardingContent surface="transparent">
 			<div className="flex flex-col items-center py-4 text-center">
 				<Import aria-hidden="true" className="size-10 text-primary" />
 				<h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-					Bring your history with you
+					导入历史会话
 				</h1>
 				<p className="mt-3 text-md text-muted-foreground">
 					{imported
-						? "Your sessions are in Cline's history now. You can import more anytime from the Sessions page."
-						: `Cline found ${found.count} session${found.count === 1 ? "" : "s"} from ${toolList} on this machine. Import them to keep your past conversations — and continue them here.`}
+						? "会话已导入牛马。之后可在设置中继续导入。"
+						: `牛马在本机发现 ${found.count} 个来自 ${toolList} 的会话。导入后即可在这里继续对话。`}
 				</p>
 				{imported ? (
 					<Button
@@ -955,7 +954,7 @@ function ImportHistoryStep({
 						type="button"
 						variant="fill"
 					>
-						Start building
+						开始使用
 					</Button>
 				) : (
 					<>
@@ -967,7 +966,7 @@ function ImportHistoryStep({
 							type="button"
 							variant="fill"
 						>
-							Choose sessions to import
+							选择要导入的会话
 						</Button>
 						<Button
 							className="mt-3"
@@ -976,7 +975,7 @@ function ImportHistoryStep({
 							type="button"
 							variant="ghost"
 						>
-							Skip for now
+							暂时跳过
 						</Button>
 					</>
 				)}
@@ -1002,12 +1001,12 @@ function DoneStep({
 			<div className="flex flex-col items-center py-4 text-center">
 				<CheckCircle2 aria-hidden="true" className="size-10 text-primary" />
 				<h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-					You&apos;re all set
+					设置完成
 				</h1>
 				<p className="mt-3 text-md text-muted-foreground">
 					{connection?.kind === "provider"
-						? `${connection.providerName} is connected.`
-						: "Your Cline account is connected."}
+						? `已连接 ${connection.providerName}。`
+						: "已连接你的 Cline 账号。"}
 				</p>
 				<Button
 					className="mt-8 w-full max-w-64"
@@ -1017,7 +1016,7 @@ function DoneStep({
 					type="button"
 					variant="fill"
 				>
-					Start building
+					开始使用
 				</Button>
 			</div>
 		</OnboardingContent>
