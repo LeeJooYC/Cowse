@@ -2139,13 +2139,20 @@ describe("refreshProviderModelsFromSource", () => {
 	afterEach(() => cleanup());
 
 	it("refreshes Moonshot from the saved compatible endpoint without bundled models", async () => {
-		const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only"}]})});
+		const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only", context_length: 1048576, max_output_tokens: 32768}]})});
 		vi.stubGlobal("fetch", fetchMock);
 		saveLocalProviderSettings(manager, {providerId: "moonshotai-cn", apiKey: "test-key", baseUrl: "https://example.invalid/coding/v1"});
 		expect(await refreshProviderModelsFromSource(manager, "moonshotai-cn")).toMatchObject({refreshed: true});
 		expect(fetchMock).toHaveBeenCalledWith("https://example.invalid/coding/v1/models", expect.objectContaining({headers: expect.objectContaining({Authorization: "Bearer test-key"})}));
 		const result = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
 		expect(result.models.map(model => model.id)).toEqual(["coding-only"]);
+		expect(result.models[0]).toMatchObject({contextWindow: 1048576});
+		const stored = await readModelsFile(resolveModelsRegistryPath(manager));
+		expect(stored.providers["moonshotai-cn"]?.models["coding-only"]).toMatchObject({contextWindow: 1048576, maxTokens: 32768});
+		fetchMock.mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only"}]})});
+		await refreshProviderModelsFromSource(manager, "moonshotai-cn");
+		const refreshed = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
+		expect(refreshed.models[0]?.contextWindow).toBeUndefined();
 	});
 
 	it("replaces a warm live catalog after the server switches models", async () => {

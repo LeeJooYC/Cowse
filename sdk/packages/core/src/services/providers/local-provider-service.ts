@@ -380,6 +380,7 @@ async function resolveModelIds(params: {
 	modelsSourceUrl?: string;
 	modelSourceHeaders?: Record<string, string>;
 	fallbackModelIds?: string[];
+	onMetadata?: Parameters<typeof fetchModelIdsFromSource>[3];
 	shouldRecompute: boolean;
 }): Promise<string[]> {
 	if (!params.shouldRecompute) {
@@ -390,6 +391,7 @@ async function resolveModelIds(params: {
 				params.modelsSourceUrl,
 				params.providerId,
 				params.modelSourceHeaders,
+				params.onMetadata,
 			)
 		: [];
 	return [...new Set([...(params.explicitModels ?? []), ...fetchedModels])];
@@ -631,7 +633,9 @@ export async function updateLocalProvider(
 		request.apiKey === undefined ? existingSettings?.apiKey : request.apiKey;
 	const effectiveHeaders =
 		request.headers === undefined ? existingSettings?.headers : request.headers;
+	let sourceMetadata: Record<string, {contextWindow?: number; maxInputTokens?: number; maxTokens?: number}> = {};
 	const modelIds = await resolveModelIds({
+		onMetadata: (models) => { sourceMetadata = models; },
 		providerId,
 		explicitModels,
 		modelsSourceUrl: nextModelsSourceUrl,
@@ -697,7 +701,9 @@ export async function updateLocalProvider(
 			capabilities,
 			modelsSourceUrl: nextModelsSourceUrl,
 		},
-		models: buildProviderModels(modelIds, capabilities),
+		models: Object.fromEntries(Object.entries(buildProviderModels(modelIds, capabilities)).map(
+			([id, model]) => [id, {...model, ...sourceMetadata[id]}],
+		)),
 	};
 	await writeModelsFile(modelsPath, modelsState);
 	registerCustomProvider(providerId, modelsState.providers[providerId]);

@@ -56,6 +56,7 @@ export async function fetchModelIdsFromSource(
 	url: string,
 	providerId: string,
 	headers?: Record<string, string>,
+	onMetadata?: (models: Record<string, { contextWindow?: number; maxInputTokens?: number; maxTokens?: number }>) => void,
 ): Promise<string[]> {
 	const response = await fetch(url, {
 		method: "GET",
@@ -66,10 +67,22 @@ export async function fetchModelIdsFromSource(
 			`failed to fetch models from ${url}: HTTP ${response.status}`,
 		);
 	}
-	return extractModelIdsFromPayload(
-		(await response.json()) as unknown,
-		providerId,
-	);
+	const payload = await response.json() as any;
+	const rows = Array.isArray(payload) ? payload : payload?.data ?? payload?.models;
+	const metadata: Record<string, {contextWindow?: number; maxInputTokens?: number; maxTokens?: number}> = {};
+	const positive = (value: unknown): number | undefined =>
+		typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+	if (Array.isArray(rows)) for (const row of rows) {
+		if (!row || typeof row !== "object" || typeof row.id !== "string") continue;
+		const contextWindow = positive(row.context_length) ?? positive(row.contextWindow) ?? positive(row.context_window);
+		metadata[row.id.trim()] = {
+			contextWindow,
+			maxInputTokens: positive(row.max_input_tokens) ?? positive(row.maxInputTokens) ?? contextWindow,
+			maxTokens: positive(row.max_output_tokens) ?? positive(row.maxTokens),
+		};
+	}
+	onMetadata?.(metadata);
+	return extractModelIdsFromPayload(payload, providerId);
 }
 
 function trimTrailingSlash(value: string): string {
