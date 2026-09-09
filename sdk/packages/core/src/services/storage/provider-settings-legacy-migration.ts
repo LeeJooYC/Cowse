@@ -903,6 +903,7 @@ export function migrateLegacyProviderSettings(
 	const candidates = collectCandidateProviderIds(globalState, secrets);
 	const next = emptyStoredProviderSettings();
 	next.providers = { ...existing.providers };
+	next.disconnectedProviders = existing.disconnectedProviders;
 	next.lastUsedProvider = existing.lastUsedProvider;
 	const now = new Date().toISOString();
 	let addedProviderCount = 0;
@@ -915,7 +916,7 @@ export function migrateLegacyProviderSettings(
 
 	for (const legacyProviderId of candidates) {
 		const providerId = resolveMigratedProviderId(legacyProviderId);
-		if (next.providers[providerId]) {
+		if (next.providers[providerId] || next.disconnectedProviders?.includes(providerId)) {
 			continue;
 		}
 		// A provider selected only in the non-current mode must be read through

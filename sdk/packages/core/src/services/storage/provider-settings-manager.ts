@@ -160,6 +160,9 @@ export class ProviderSettingsManager {
 			options.tokenSource ?? previousEntry?.tokenSource ?? "manual";
 		const next: StoredProviderSettings = {
 			...previous,
+			disconnectedProviders: previous.disconnectedProviders?.filter(
+				(id) => id !== providerId,
+			),
 			providers: {
 				...previous.providers,
 				[providerId]: {

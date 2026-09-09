@@ -321,22 +321,21 @@ export function SettingsView({
 		[loadProviderCatalog, resyncProviderCatalog],
 	);
 
+	const providerDraftsRef = useRef<Record<string, ProviderSettingsUpdate>>({});
 	const connectProvider = useCallback(
 		(id: string) => {
 			// Persist an (empty) settings entry so the provider is enabled with
 			// whatever credentials it resolves at runtime (env vars, local CLI,
 			// keyless endpoints).
 			catalogGenerationRef.current++;
-			setProvidersWithCache((prev) =>
-				prev.map((p) => (p.id === id ? { ...p, enabled: true } : p)),
-			);
-			void persistProviderSettings(id, { enabled: true });
+			void persistProviderSettings(id, { ...providerDraftsRef.current[id], enabled: true });
 		},
 		[persistProviderSettings, setProvidersWithCache],
 	);
 
 	const disconnectProvider = useCallback(
 		async (id: string) => {
+			delete providerDraftsRef.current[id];
 			catalogGenerationRef.current++;
 			setProvidersWithCache((prev) =>
 				prev.map((p) =>
@@ -365,33 +364,14 @@ export function SettingsView({
 
 	const updateProvider = useCallback(
 		(id: string, updates: ProviderSettingsUpdate) => {
-			// Saving settings creates the provider's persisted entry, which is
-			// what "connected" means for keyless providers — reflect it locally.
-			catalogGenerationRef.current++;
-			setProvidersWithCache((prev) =>
-				prev.map((p) =>
-					p.id === id
-						? {
-								...p,
-								...updates,
-								enabled: true,
-								configValues: updates.configValues
-									? {
-											...(p.configValues ?? {}),
-											...updates.configValues,
-										}
-									: p.configValues,
-							}
-						: p,
-				),
-			);
-			void persistProviderSettings(id, {
-				apiKey: updates.apiKey,
-				baseUrl: updates.baseUrl,
-				configValues: updates.configValues,
-			});
+			const previous = providerDraftsRef.current[id];
+			providerDraftsRef.current[id] = {
+				...previous, ...updates,
+				configValues: { ...previous?.configValues, ...updates.configValues },
+			};
+			// Draft credentials must never affect persisted connection readiness.
 		},
-		[persistProviderSettings, setProvidersWithCache],
+		[],
 	);
 
 	const loadProviderModels = useCallback(

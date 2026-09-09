@@ -158,6 +158,34 @@ describe("system theme settings", () => {
 });
 
 describe("SettingsView provider navigation", () => {
+	it("keeps blurred credentials as drafts until an explicit connection", async () => {
+		let connected = false;
+		invoke.mockImplementation(async (command: string) => {
+			if (command === "save_provider_settings") { connected = true; return {}; }
+			if (command === "list_provider_catalog") return { providers: [{
+				id: "moonshot", name: "Draft test provider", models: 0, color: "#000", letter: "M",
+				enabled: connected, configured: connected, modelList: [],
+				configFields: [{path: "apiKey", label: "API Key", type: "password", secret: true}],
+			}] };
+			return {models: []};
+		});
+		await act(async () => root.render(<SettingsView section="Models" onNavigateSection={vi.fn()} />));
+		await act(async () => window.dispatchEvent(new Event("focus")));
+		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent?.includes("Draft test provider"))!.click());
+		const input = container.querySelector('input[type="password"]') as HTMLInputElement;
+		expect(input).not.toBeNull();
+		await act(async () => {
+			Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "test-draft-key");
+			input.dispatchEvent(new Event("input", {bubbles: true}));
+		});
+		await act(async () => input.dispatchEvent(new FocusEvent("focusout", {bubbles: true})));
+		expect(invoke.mock.calls.some(([command]) => command === "save_provider_settings")).toBe(false);
+		expect(container.textContent).not.toContain("保存并重连");
+		expect(container.textContent).not.toContain("断开连接");
+		await act(async () => [...container.querySelectorAll("button")].find(b => b.textContent === "连接")!.click());
+		expect(invoke).toHaveBeenCalledWith("save_provider_settings", expect.objectContaining({api_key: "test-draft-key", enabled: true}));
+		expect(container.textContent).toContain("保存并重连");
+	});
 	it("recovers persisted OAuth status on focus, auth events, and reentry", async () => {
 		let connected = false;
 		invoke.mockImplementation(async (command: string) => {

@@ -11,9 +11,34 @@ import path from "node:path";
 import * as LlmsModels from "@cline/llms";
 import { afterEach, describe, expect, it } from "vitest";
 import { ProviderSettingsManager } from "./provider-settings-manager";
+import { saveLocalProviderSettings } from "../providers/local-provider-service";
 
 describe("ProviderSettingsManager", () => {
 	const tempDirs: string[] = [];
+
+	it("keeps disconnected legacy providers disconnected across reloads", () => {
+		const tempDir = mkdtempSync(path.join(os.tmpdir(), "provider-disconnect-"));
+		tempDirs.push(tempDir);
+		const filePath = path.join(tempDir, "settings", "providers.json");
+		writeFileSync(path.join(tempDir, "globalState.json"), JSON.stringify({
+			mode: "act", actModeApiProvider: "openai",
+			actModeOpenAiModelId: "test-model", openAiBaseUrl: "http://localhost:8080/v1",
+		}));
+		writeFileSync(path.join(tempDir, "secrets.json"), JSON.stringify({openAiApiKey: "legacy-key"}));
+		const manager = new ProviderSettingsManager({filePath, dataDir: tempDir});
+		expect(manager.getProviderSettings("openai-compatible")).toBeDefined();
+		saveLocalProviderSettings(manager, {providerId: "openai-compatible", enabled: false});
+		for (let i = 0; i < 2; i++) {
+			const reloaded = new ProviderSettingsManager({filePath, dataDir: tempDir});
+			expect(reloaded.getProviderSettings("openai-compatible")).toBeUndefined();
+			expect(reloaded.read().disconnectedProviders).toContain("openai-compatible");
+		}
+		saveLocalProviderSettings(manager, {providerId: "openai-compatible", enabled: true, baseUrl: "http://localhost:8080/v1"});
+		const reconnected = new ProviderSettingsManager({filePath, dataDir: tempDir});
+		expect(reconnected.getProviderSettings("openai-compatible")).toBeDefined();
+		expect(reconnected.read().disconnectedProviders).not.toContain("openai-compatible");
+		expect(JSON.parse(readFileSync(path.join(tempDir, "secrets.json"), "utf8"))).toEqual({openAiApiKey: "legacy-key"});
+	});
 
 	afterEach(() => {
 		LlmsModels.resetRegistry();

@@ -41,6 +41,7 @@ export interface StoredProviderSettingsEntry {
 
 export interface StoredProviderSettings {
 	version: 1;
+	disconnectedProviders?: string[];
 	lastUsedProvider?: string;
 	modes: StoredProviderModes;
 	providers: Record<string, StoredProviderSettingsEntry>;
@@ -61,6 +62,7 @@ export const StoredProviderSettingsEntrySchema: z.ZodType<StoredProviderSettings
 export const StoredProviderSettingsSchema: z.ZodType<StoredProviderSettings> =
 	z.object({
 		version: z.literal(1),
+		disconnectedProviders: z.array(z.string().min(1)).optional(),
 		lastUsedProvider: z.string().min(1).optional(),
 		modes: StoredProviderModesSchema.default({}),
 		providers: z.record(z.string(), StoredProviderSettingsEntrySchema),

@@ -2138,6 +2138,16 @@ describe("refreshProviderModelsFromSource", () => {
 
 	afterEach(() => cleanup());
 
+	it("refreshes Moonshot from the saved compatible endpoint without bundled models", async () => {
+		const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only"}]})});
+		vi.stubGlobal("fetch", fetchMock);
+		saveLocalProviderSettings(manager, {providerId: "moonshotai-cn", apiKey: "test-key", baseUrl: "https://example.invalid/coding/v1"});
+		expect(await refreshProviderModelsFromSource(manager, "moonshotai-cn")).toMatchObject({refreshed: true});
+		expect(fetchMock).toHaveBeenCalledWith("https://example.invalid/coding/v1/models", expect.objectContaining({headers: expect.objectContaining({Authorization: "Bearer test-key"})}));
+		const result = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
+		expect(result.models.map(model => model.id)).toEqual(["coding-only"]);
+	});
+
 	it("replaces a warm live catalog after the server switches models", async () => {
 		let ids = ["old-model"];
 		vi.stubGlobal(

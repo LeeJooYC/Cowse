@@ -1066,6 +1066,9 @@ export function saveLocalProviderSettings(
 
 	if (request.enabled === false) {
 		const state = manager.read();
+		state.disconnectedProviders = [...new Set([
+			...(state.disconnectedProviders ?? []), providerId,
+		])];
 		delete state.providers[providerId];
 		if (state.lastUsedProvider === providerId) delete state.lastUsedProvider;
 		if (state.modes.voiceInput?.providerId === providerId) {
@@ -1141,7 +1144,9 @@ export async function refreshProviderModelsFromSource(
 		baseUrl,
 		provider?.baseUrl,
 		provider?.modelsSourceUrl,
-	);
+	) ?? (baseUrl && (settings?.protocol ?? provider?.protocol) === "openai-chat"
+		? `${baseUrl.replace(/\/+$/, "")}/models`
+		: undefined);
 	if (!settings || !provider || !baseUrl || !modelsSourceUrl) {
 		return { providerId: id, refreshed: false };
 	}

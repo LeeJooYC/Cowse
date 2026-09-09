@@ -947,8 +947,10 @@ export function ProviderDetailContent({
 					{connected ? (
 						<>
 							<p className="text-xs text-muted-foreground">
-								上方字段的更改会自动保存。
+								修改后请点击“保存并重连”生效。
 							</p>
+							<div className="ml-auto flex shrink-0 items-center gap-2">
+							{onConnect ? <Button size="sm" variant="outline" onClick={onConnect}>保存并重连</Button> : null}
 							{onDisconnect ? (
 								<Button
 									className="shrink-0"
@@ -960,12 +962,12 @@ export function ProviderDetailContent({
 									断开连接
 								</Button>
 							) : null}
+							</div>
 						</>
 					) : (
 						<>
 							<p className="text-xs text-muted-foreground">
-								保存 API
-								密钥会自动配置此供应商。如果它从环境或本地端点读取凭据，请点击“连接”。
+								填写后请点击“连接”保存并启用，输入不会自动连接。
 							</p>
 							{onConnect ? (
 								<Button
