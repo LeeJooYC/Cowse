@@ -13,6 +13,7 @@ import {
 	ApiFormatSchema,
 	type ModelCapability,
 	ModelCapabilitySchema,
+	ModelReasoningOptionSchema,
 	type ModelInfo,
 	ModelModalitiesSchema,
 	ModelOperationModeSchema,
@@ -53,6 +54,7 @@ export const StoredModelEntrySchema = z
 		name: z.string().optional(),
 		maxTokens: OptionalPositiveFiniteNumberSchema,
 		contextWindow: OptionalPositiveFiniteNumberSchema,
+		reasoningOptions: z.array(ModelReasoningOptionSchema).optional(),
 		maxInputTokens: OptionalPositiveFiniteNumberSchema,
 		capabilities: z.array(ModelCapabilitySchema).optional(),
 		supportsVision: z.boolean().optional(),
@@ -246,6 +248,7 @@ export function toProviderModel(
 		| "contextWindow"
 		| "capabilities"
 		| "thinkingConfig"
+		| "reasoningOptions"
 		| "operation"
 		| "operationModes"
 		| "modalities"
@@ -253,6 +256,7 @@ export function toProviderModel(
 ): ProviderModel {
 	return {
 		id: modelId,
+		reasoningOptions: info.reasoningOptions,
 		name: info.name ?? modelId,
 		...(info.description ? { description: info.description } : {}),
 		operation: info.operation,
@@ -393,6 +397,7 @@ function toStoredModelInfo(
 	return {
 		id: modelId,
 		name: model?.name ?? modelId,
+		reasoningOptions: model?.reasoningOptions,
 		...(model?.maxTokens !== undefined ? { maxTokens: model.maxTokens } : {}),
 		...(model?.contextWindow !== undefined
 			? { contextWindow: model.contextWindow }

@@ -1972,7 +1972,7 @@ export async function handleCommand(
 					...provider,
 					modelList: provider.modelList?.map((model) => ({
 						...model,
-						reasoningOptions: knownModels?.[model.id]?.reasoningOptions,
+						reasoningOptions: model.reasoningOptions ?? knownModels?.[model.id]?.reasoningOptions,
 					})),
 				};
 			}),
@@ -1993,7 +1993,7 @@ export async function handleCommand(
 			...result,
 			models: result.models.map((model) => ({
 				...model,
-				reasoningOptions: knownModels?.[model.id]?.reasoningOptions,
+				reasoningOptions: model.reasoningOptions ?? knownModels?.[model.id]?.reasoningOptions,
 			})),
 		};
 	}

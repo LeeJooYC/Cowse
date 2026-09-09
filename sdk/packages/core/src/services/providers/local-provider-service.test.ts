@@ -2139,7 +2139,7 @@ describe("refreshProviderModelsFromSource", () => {
 	afterEach(() => cleanup());
 
 	it("refreshes Moonshot from the saved compatible endpoint without bundled models", async () => {
-		const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only", context_length: 1048576, max_output_tokens: 32768}]})});
+		const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only", context_length: 1048576, max_output_tokens: 32768, supported_reasoning_efforts: ["low", "high"]}]})});
 		vi.stubGlobal("fetch", fetchMock);
 		saveLocalProviderSettings(manager, {providerId: "moonshotai-cn", apiKey: "test-key", baseUrl: "https://example.invalid/coding/v1"});
 		expect(await refreshProviderModelsFromSource(manager, "moonshotai-cn")).toMatchObject({refreshed: true});
@@ -2147,12 +2147,20 @@ describe("refreshProviderModelsFromSource", () => {
 		const result = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
 		expect(result.models.map(model => model.id)).toEqual(["coding-only"]);
 		expect(result.models[0]).toMatchObject({contextWindow: 1048576});
+		expect(result.models[0]?.reasoningOptions).toEqual([{type: "effort", values: ["low", "high"]}]);
 		const stored = await readModelsFile(resolveModelsRegistryPath(manager));
 		expect(stored.providers["moonshotai-cn"]?.models["coding-only"]).toMatchObject({contextWindow: 1048576, maxTokens: 32768});
 		fetchMock.mockResolvedValue({ok: true, json: async () => ({data: [{id: "coding-only"}]})});
 		await refreshProviderModelsFromSource(manager, "moonshotai-cn");
 		const refreshed = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
 		expect(refreshed.models[0]?.contextWindow).toBeUndefined();
+		expect(refreshed.models[0]?.reasoningOptions).toBeUndefined();
+		const documented = LlmsModels.getGeneratedModelsForProvider("moonshotai-cn")["kimi-k3"]?.reasoningOptions;
+		expect(documented?.length).toBeGreaterThan(0);
+		fetchMock.mockResolvedValue({ok: true, json: async () => ({data: [{id: "kimi-k3"}]})});
+		await refreshProviderModelsFromSource(manager, "moonshotai-cn");
+		const withFallback = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
+		expect(withFallback.models[0]?.reasoningOptions).toEqual(documented);
 		saveLocalProviderSettings(manager, {providerId: "moonshotai-cn", enabled: false});
 		expect(manager.getProviderSettings("moonshotai-cn")).toBeUndefined();
 		expect((await readModelsFile(resolveModelsRegistryPath(manager))).providers["moonshotai-cn"]).toBeUndefined();

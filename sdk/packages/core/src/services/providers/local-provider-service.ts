@@ -635,7 +635,7 @@ export async function updateLocalProvider(
 		request.apiKey === undefined ? existingSettings?.apiKey : request.apiKey;
 	const effectiveHeaders =
 		request.headers === undefined ? existingSettings?.headers : request.headers;
-	let sourceMetadata: Record<string, {contextWindow?: number; maxInputTokens?: number; maxTokens?: number}> = {};
+	let sourceMetadata: Parameters<NonNullable<Parameters<typeof fetchModelIdsFromSource>[3]>>[0] = {};
 	const modelIds = await resolveModelIds({
 		onMetadata: (models) => { sourceMetadata = models; },
 		providerId,
@@ -704,7 +704,9 @@ export async function updateLocalProvider(
 			modelsSourceUrl: nextModelsSourceUrl,
 		},
 		models: Object.fromEntries(Object.entries(buildProviderModels(modelIds, capabilities)).map(
-			([id, model]) => [id, {...model, ...sourceMetadata[id]}],
+			([id, model]) => [id, {...model, ...sourceMetadata[id], reasoningOptions:
+				sourceMetadata[id]?.reasoningOptions ??
+				LlmsModels.getGeneratedModelsForProvider(providerId)[id]?.reasoningOptions}],
 		)),
 	};
 	await writeModelsFile(modelsPath, modelsState);

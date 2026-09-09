@@ -1,3 +1,20 @@
+import { ModelReasoningOptionSchema, type ModelReasoningOption } from "@cline/shared";
+
+export function parseReasoningOptions(row: Record<string, unknown>): ModelReasoningOption[] | undefined {
+	const raw = row.reasoningOptions ?? row.reasoning_options;
+	if (Array.isArray(raw)) {
+		const parsed = raw.map(value => ModelReasoningOptionSchema.safeParse(value));
+		const valid = parsed.flatMap(result => result.success ? [result.data] : []);
+		if (valid.length) return valid;
+	}
+	const efforts = row.supported_reasoning_efforts ?? row.reasoning_efforts;
+	if (Array.isArray(efforts)) {
+		const parsed = ModelReasoningOptionSchema.safeParse({type: "effort", values: efforts});
+		if (parsed.success && efforts.length) return [parsed.data];
+	}
+	return undefined;
+}
+
 function parseModelIdList(input: unknown): string[] {
 	if (!Array.isArray(input)) return [];
 	return input
@@ -56,7 +73,7 @@ export async function fetchModelIdsFromSource(
 	url: string,
 	providerId: string,
 	headers?: Record<string, string>,
-	onMetadata?: (models: Record<string, { contextWindow?: number; maxInputTokens?: number; maxTokens?: number }>) => void,
+	onMetadata?: (models: Record<string, { contextWindow?: number; maxInputTokens?: number; maxTokens?: number; reasoningOptions?: ModelReasoningOption[] }>) => void,
 ): Promise<string[]> {
 	const response = await fetch(url, {
 		method: "GET",
@@ -69,13 +86,14 @@ export async function fetchModelIdsFromSource(
 	}
 	const payload = await response.json() as any;
 	const rows = Array.isArray(payload) ? payload : payload?.data ?? payload?.models;
-	const metadata: Record<string, {contextWindow?: number; maxInputTokens?: number; maxTokens?: number}> = {};
+	const metadata: Record<string, {contextWindow?: number; maxInputTokens?: number; maxTokens?: number; reasoningOptions?: ModelReasoningOption[]}> = {};
 	const positive = (value: unknown): number | undefined =>
 		typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 	if (Array.isArray(rows)) for (const row of rows) {
 		if (!row || typeof row !== "object" || typeof row.id !== "string") continue;
 		const contextWindow = positive(row.context_length) ?? positive(row.contextWindow) ?? positive(row.context_window);
 		metadata[row.id.trim()] = {
+			reasoningOptions: parseReasoningOptions(row),
 			contextWindow,
 			maxInputTokens: positive(row.max_input_tokens) ?? positive(row.maxInputTokens) ?? contextWindow,
 			maxTokens: positive(row.max_output_tokens) ?? positive(row.maxTokens),

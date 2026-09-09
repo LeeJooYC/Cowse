@@ -161,6 +161,7 @@ export interface ProviderModelFeatured {
 }
 
 export interface ProviderModel {
+	reasoningOptions?: import("../llms/reasoning-options").ModelReasoningOption[];
 	id: string;
 	name: string;
 	description?: string;
