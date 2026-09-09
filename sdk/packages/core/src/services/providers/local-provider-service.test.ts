@@ -2153,6 +2153,11 @@ describe("refreshProviderModelsFromSource", () => {
 		await refreshProviderModelsFromSource(manager, "moonshotai-cn");
 		const refreshed = await getLocalProviderModels("moonshotai-cn", manager.getProviderConfig("moonshotai-cn", {includeKnownModels: false}));
 		expect(refreshed.models[0]?.contextWindow).toBeUndefined();
+		saveLocalProviderSettings(manager, {providerId: "moonshotai-cn", enabled: false});
+		expect(manager.getProviderSettings("moonshotai-cn")).toBeUndefined();
+		expect((await readModelsFile(resolveModelsRegistryPath(manager))).providers["moonshotai-cn"]).toBeUndefined();
+		expect((await getLocalProviderModels("moonshotai-cn")).models.map(model => model.id)).not.toContain("coding-only");
+		expect(LlmsModels.MODEL_COLLECTIONS_BY_PROVIDER_ID["moonshotai-cn"].provider.baseUrl).not.toContain("example.invalid");
 	});
 
 	it("replaces a warm live catalog after the server switches models", async () => {

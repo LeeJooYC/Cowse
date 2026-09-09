@@ -38,6 +38,8 @@ import type { ProviderTokenSource } from "../../types/provider-settings";
 import type { ProviderSettingsManager } from "../storage/provider-settings-manager";
 import {
 	readModelsFile,
+	readModelsFileSync,
+	writeModelsFileSync,
 	registerCustomProvider,
 	resolveModelsRegistryPath,
 	toProviderModel,
@@ -1081,6 +1083,12 @@ export function saveLocalProviderSettings(
 			delete state.modes.voiceInput;
 		}
 		manager.write(state);
+		const modelsPath = resolveModelsRegistryPath(manager);
+		const modelsState = readModelsFileSync(modelsPath);
+		delete modelsState.providers[providerId];
+		writeModelsFileSync(modelsPath, modelsState);
+		LlmsModels.unregisterProvider(providerId);
+		clearPublicModelsCatalogCache({ providerId });
 		return { providerId, enabled: false, settingsPath: manager.getFilePath() };
 	}
 

@@ -347,6 +347,8 @@ export function SettingsView({
 				providerCatalogCache = null;
 				notifyVoiceInputSettingsChanged();
 				await loadProviderCatalog();
+				setModelsErrorByProvider((prev) => ({...prev, [id]: null}));
+				setDetailResetToken((token) => token + 1);
 			}
 		},
 		[loadProviderCatalog, persistProviderSettings, setProvidersWithCache],
